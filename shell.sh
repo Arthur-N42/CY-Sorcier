@@ -9,15 +9,73 @@ fi
 # Erreur trouvee : il manquait un espace "-h"ici]
 
 for i in $* ; do
-    if [ "$i" = "-h" ] ; then
-        echo "oui"
+    if [ "$i" = "-h" ] || [ "$i" = "--help" ]; then
+        echo "HELP ME"
         exit 1
-    else
-    if [ -d "temp" ]; then
-        echo "Le dossier 'test' existe."
-    else
-        mkdir temp
-    fi
     fi
 done
 
+d1=0
+d2=0
+l=0
+t=0
+s=0
+
+for (( i=2 ; i<=$# ; i++ )) ; do
+    case ${!i} in
+        "-d1")
+            d1=1
+            ;;
+        "-d2")
+            d2=0
+            ;;
+        "-l")
+            l=1
+            ;;
+        "-t")
+            t=1
+            ;;
+        "-s")
+            s=1
+            ;;
+        *)
+            echo "${!i} n'est pas un argument valide"
+            ;;
+    esac
+done
+
+ini_Doss() {
+    if [ -d "temp" ]; then
+        echo "Le dossier 'temp' existe."
+        rm -rf temp
+    else
+        mkdir temp
+    fi
+}
+
+if [ $d1 = 1 ]; then
+    echo "cool"
+fi
+
+if [ $d2 = 1 ]; then
+    echo "cool"
+fi
+
+if [ $l = 1 ]; then
+    echo "cool"
+fi
+
+if [ $t = 1 ]; then
+    echo "cool"
+fi
+
+if [ $s = 1 ]; then
+    echo "cool"
+fi
+
+#if [ -d "temp" ]; then
+#        echo "Le dossier 'test' existe."
+ #   else
+ #       mkdir temp
+  #  fi
+#
