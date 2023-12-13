@@ -1,3 +1,11 @@
+#!/bin/bash
+
+d1=0
+d2=0
+l=0
+t=0
+s=0
+
 if [ $# -lt  2 ] ; then
     echo "Erreur : deux arguments au moins sont nécessaires."
     exit 1
@@ -14,12 +22,6 @@ for i in $* ; do
         exit 1
     fi
 done
-
-d1=0
-d2=0
-l=0
-t=0
-s=0
 
 for (( i=2 ; i<=$# ; i++ )) ; do
     case ${!i} in
@@ -46,15 +48,17 @@ done
 
 ini_Doss() {
     if [ -d "temp" ]; then
-        echo "Le dossier 'temp' existe."
         rm -rf temp
-    else
-        mkdir temp
+    fi
+    mkdir temp
+    if [ ! -d "images" ]; then
+        mkdir images
     fi
 }
 
 if [ $d1 = 1 ]; then
     echo "cool"
+    ini_Doss
 fi
 
 if [ $d2 = 1 ]; then
@@ -72,10 +76,3 @@ fi
 if [ $s = 1 ]; then
     echo "cool"
 fi
-
-#if [ -d "temp" ]; then
-#        echo "Le dossier 'test' existe."
- #   else
- #       mkdir temp
-  #  fi
-#
