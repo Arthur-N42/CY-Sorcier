@@ -57,9 +57,11 @@ ini_Doss() {
 }
 
 if [ $d1 = 1 ]; then
-    echo "cool"
     ini_Doss
-    awk '{ if $5 }' $1
+    # NR > 1 ignore la ligne 1 
+    # Utilise un dictionnaire et incremente le nombre de trajet pour un conducteur si la paire (ID - Conducteur) n'a pas ete "ajoutee"
+    # Trie dans l'ordre decroissant et affiche les 10 premiers
+    awk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10
 fi  
 
 if [ $d2 = 1 ]; then
