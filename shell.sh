@@ -29,7 +29,7 @@ for (( i=2 ; i<=$# ; i++ )) ; do
             d1=1
             ;;
         "-d2")
-            d2=0
+            d2=1
             ;;
         "-l")
             l=1
@@ -61,11 +61,12 @@ if [ $d1 = 1 ]; then
     # NR > 1 ignore la ligne 1 
     # Utilise un dictionnaire et incremente le nombre de trajet pour un conducteur si la paire (ID - Conducteur) n'a pas ete "ajoutee"
     # Trie dans l'ordre decroissant et affiche les 10 premiers
-    awk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10
+    time awk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10
 fi  
 
 if [ $d2 = 1 ]; then
     echo "cool"
+    time awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10
 fi
 
 if [ $l = 1 ]; then
