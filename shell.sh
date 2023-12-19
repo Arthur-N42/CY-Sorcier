@@ -59,7 +59,8 @@ ini_Doss() {
 if [ $d1 = 1 ]; then
     echo "cool"
     ini_Doss
-fi
+    awk '{ if $5 }' $1
+fi  
 
 if [ $d2 = 1 ]; then
     echo "cool"
