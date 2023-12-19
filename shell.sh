@@ -66,22 +66,7 @@ fi
 
 if [ $d2 = 1 ]; then
     echo "cool"
-    #time awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10
-    if [ $d2 = 1 ]; then
-    echo "cool"
-    awk -F';' 'NR > 1 {
-        distance = $5
-        conducteur = $6
-
-        trajets[conducteur]+=distance
-    } 
-    END {
-        for (conducteur in trajets) {
-            print conducteur,";",trajets[conducteur]
-        }
-    }' $1 | sort -n -r -t";" -k2 | head -10
-fi
-
+    time awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10 # ~2.2s exec
 fi
 
 if [ $l = 1 ]; then
