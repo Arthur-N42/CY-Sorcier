@@ -71,6 +71,8 @@ fi
 
 if [ $l = 1 ]; then
     echo "cool"
+    gcc -o traitements main.c
+    ./traitements test ok ??
 fi
 
 if [ $t = 1 ]; then
