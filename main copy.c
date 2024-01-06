@@ -30,6 +30,7 @@ pArbre creerArbre(char name[20], int flag){
         exit(1);
     }
     strcpy(new->ville.nom, name);
+    new->ville.trajets = 1;
     new->ville.premier=flag;
     new->eq=0;
     new->fd=NULL;
