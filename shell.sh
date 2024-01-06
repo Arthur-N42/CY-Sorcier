@@ -1,15 +1,13 @@
 #!/bin/bash
-
 d1=0
 d2=0
 l=0
 t=0
 s=0
-
 if [ $# -lt  2 ] ; then
     echo "Erreur : deux arguments au moins sont nécessaires."
     exit 1
-elif [ ! -f "$1" ] || [ "${1##*.}" != "csv" ] ; then
+elif [ ! -f "$1" ] || [ "${1##*.}" != "csv" ]; then
     echo "Erreur : Le premier argument n'est pas un fichier csv."
     exit 1
 fi

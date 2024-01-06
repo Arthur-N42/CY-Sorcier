@@ -8,6 +8,7 @@
 typedef struct Ville {
     int trajets;
     char nom[30];
+    int premier;
 }Ville;
 
 typedef struct arbre{
@@ -23,13 +24,14 @@ void supprimerFilsDroit(pArbre a);
 void supprimerFilsGauche(pArbre a);
 
 
-pArbre creerArbre(char name[20]){
+pArbre creerArbre(char name[20], int flag){
     pArbre new = malloc(sizeof(Arbre));
     if(new == NULL){
         exit(1);
     }
     new->ville.trajets = 1;
     strcpy(new->ville.nom, name);
+    new->ville.premier=flag;
     new->eq=0;
     new->fd=NULL;
     new->fg=NULL;
@@ -61,26 +63,9 @@ int existeFilsDroit(pArbre a){
     return !(a->fd == NULL);
 }
 
-pArbre ajouterFilsGauche(pArbre a, char name[20]){
-    if(existeFilsGauche(a)){
-        return a;
-    }
-    a->fg = creerArbre(name);
-    return a;
-}
-
-pArbre ajouterFilsDroit(pArbre a, char name[20]){
-    if(existeFilsDroit(a)){
-        return a;
-    }
-    a->fd = creerArbre(name);
-    return a;
-}
-
 //affiche la valeur dans le noeud
 void traiter(pArbre a){
     if(a == NULL){
-        printf("");
     }
     else{
         printf("%s ; %d trajets\n",a->ville.nom, a->ville.trajets);
@@ -225,24 +210,27 @@ pArbre equilibrerAVL(pArbre a){
     return a;
 }
 
-// Fonction récursive pour insérer un nœud dans l'arbre AVL
-pArbre insert(pArbre node, char name[20], int* h, int* count) {
+// Fonction récursive pour insérer un noeud dans l'arbre AVL
+pArbre insert(pArbre node, char name[20], int* h, int* count, int flag) {
     if (node == NULL){
         *h=1;
         *count = *count+1;
-        return creerArbre(name);
+        return creerArbre(name, flag);
     }
 
     if (strcmp(name, node->ville.nom) < 0){
-        node->fg = insert(node->fg, name, h, count);
+        node->fg = insert(node->fg, name, h, count, flag);
         *h=-*h;
     }
     else if (strcmp(name, node->ville.nom) > 0){
-        node->fd = insert(node->fd, name, h, count);
+        node->fd = insert(node->fd, name, h, count, flag);
     }
     else {
         // Le nom existe déjà, incrémenter le nombre de trajets
         *h=0;
+        if(flag == 1){
+            node->ville.premier+=1;
+        }
         node->ville.trajets++;
         return node;
     }
@@ -270,10 +258,53 @@ void freeAVL(pArbre root){
     }
 }
 
+void AVL_to_Tab(pArbre node,Ville* tab,int *n){
+    if(node){
+
+        AVL_to_Tab(node->fg,tab,n);
+
+
+        strcpy(tab[*n].nom,node->ville.nom);
+        tab[*n].trajets=node->ville.trajets;
+        tab[*n].premier=node->ville.premier;
+
+        (*n)++;
+        
+        AVL_to_Tab(node->fd,tab,n);
+    }
+}
+
+
+void afficheTab(Ville* tab,int n){
+    for (int i = 0; i < n; i++){
+        printf("\nVille : %s, trajets : %d, premier : %d",tab[i].nom,tab[i].trajets,tab[i].premier);
+    }
+    
+}
+
+void triBulle(Ville *tab, int taille){
+    int desordre, ncase, etape;
+    Ville temp;
+    etape = taille - 1;
+    do{
+        desordre = 0;
+        for (ncase = 0; ncase < etape; ncase++){
+            if (tab[ncase].trajets < tab[ncase + 1].trajets){
+            desordre = 1;
+            temp = tab[ncase];
+            tab[ncase] = tab[ncase + 1];
+            tab[ncase + 1] = temp;
+            }
+        }
+        etape--;
+    } while (desordre && etape > 0);
+}
 
 int main(int argc, char *argv[]){
 
-    FILE* file = fopen("datatest.csv", "r");
+    //Traitement -t
+
+    FILE* file = fopen("../data.csv", "r");
     if (file == NULL) {
         perror("Erreur lors de l'ouverture du fichier");
         return 1;
@@ -295,15 +326,70 @@ int main(int argc, char *argv[]){
         token = strtok(NULL, ";");
         strcpy(townB, token);
 
-        AVLroot = insert(AVLroot, townB, &h, &count);
+        AVLroot = insert(AVLroot, townB, &h, &count, 0);
+    }
+
+    // On revient au debut du fichier pour prendre les villes de départ
+
+    rewind(file);
+
+    while (fgets(line, sizeof(line), file)){
+        char *token;
+        char townA[50];
+        int h = 0;
+        // Utiliser strtok pour extraire les champs du fichier CSV
+        token = strtok(line, ";");
+        token = strtok(NULL, ";");
+        if (atoi(token) == 1){
+            token = strtok(NULL, ";");
+            strcpy(townA, token);
+            AVLroot = insert(AVLroot, townA, &h, &count, 1);
+        }
     }
 
     fclose(file);
 
-    parcoursDecroissant(AVLroot);
-    printf("\n\n nb villes = %d\n", count);
-    free(AVLroot);
+    printf("\nNb villes = %d\n", count);
 
+    Ville* tab = (Ville*)malloc(sizeof(Ville)*count);
+    
+    int n = 0;
+
+    AVL_to_Tab(AVLroot,tab,&n);
+    triBulle(tab,count);
+
+    afficheTab(tab,10);
+
+    free(AVLroot);
+    free(tab);
+    
+
+    //Traitement -s
+
+    FILE* file = fopen("../data.csv", "r");
+    if (file == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        return 1;
+    }
+
+    char line[256];
+    pArbre AVLroot = NULL;
+    int count = 0;
+
+    while (fgets(line, sizeof(line), file)){
+        char *token;
+        char townB[50];
+        int h = 0;
+
+        // Utiliser strtok pour extraire les champs du fichier CSV
+        token = strtok(line, ";");
+        token = strtok(NULL, ";");
+        token = strtok(NULL, ";");
+        token = strtok(NULL, ";");
+        strcpy(townB, token);
+
+        AVLroot = insert(AVLroot, townB, &h, &count, 0);
+    }
 
     return 0;
 }
