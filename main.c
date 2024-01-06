@@ -5,32 +5,73 @@
 #include <string.h>
 #include <limits.h>
 
-typedef struct arbre{
-    int val;
+typedef struct Ville {
+    int trajets;
+    char nom[30];
+    int premier;
+}Ville;
+
+typedef struct Trajet{
+    int IDTrajet;
+    int max;
+    int min;
+    int total;
+    int nb_step;
+}Trajet;
+
+typedef struct Arbre_t{
+    Ville ville;
     int eq;
-    struct arbre* fg;
-    struct arbre* fd;
-}Arbre;
+    struct Arbre_t* fg;
+    struct Arbre_t* fd;
+}Arbre_t;
 
-typedef Arbre* pArbre;
+typedef struct Arbre_s{
+    int eq;
+    Trajet trajet;
+    struct Arbre_s* fg;
+    struct Arbre_s* fd;
+}Arbre_s;
 
-typedef struct Chainon {
-    pArbre arbre;
-    struct Chainon* next;
-}Chainon;
+
+typedef Arbre_t* pArbre_t;
+typedef Arbre_s* pArbre_s;
+
+void supprimerFilsDroit(pArbre_t a);
+void supprimerFilsGauche(pArbre_t a);
 
 
-void supprimerFilsDroit(pArbre a);
-void supprimerFilsGauche(pArbre a);
-
-void test(pArbre a){
-    if(a == NULL){
-        printf("Erreur ");
+pArbre_t creerArbre_Ville(char name[20], int flag){
+    pArbre_t new = malloc(sizeof(Arbre_t));
+    if(new == NULL){
         exit(1);
     }
+    strcpy(new->ville.nom, name);
+    new->ville.trajets = 1;
+    new->ville.premier=flag;
+    new->eq=0;
+    new->fd=NULL;
+    new->fg=NULL;
+    return new;
 }
 
-int hauteur(pArbre a) {
+pArbre_s creerArbre_Trajet(int ID, int distance){
+    pArbre_s new = malloc(sizeof(Arbre_s));
+    if(new == NULL){
+        exit(1);
+    }
+    new->trajet.IDTrajet = ID;
+    new->trajet.max = distance;
+    new->trajet.min = distance;
+    new->trajet.total = distance;
+    new->trajet.nb_step = 1;
+    new->eq=0;
+    new->fd=NULL;
+    new->fg=NULL;
+    return new;
+}
+
+int hauteur(pArbre_t a) {
     if (a == NULL) {
         return -1;
     } else {
@@ -41,52 +82,28 @@ int hauteur(pArbre a) {
     }
 }
 
-pArbre creerArbre(int n){
-    pArbre new = malloc(sizeof(Arbre));
-    test(new);
-    new->val=n;
-    new->eq=0;
-    new->fd=NULL;
-    new->fg=NULL;
-    return new;
-}
-
-int existeFilsGauche(pArbre a){
-    test(a);
+int existeFilsGauche(pArbre_t a){
+    if(a == NULL){
+        exit(1);
+    }
     return !(a->fg == NULL);
 }
 
-int existeFilsDroit(pArbre a){
-    test(a);
+int existeFilsDroit(pArbre_t a){
+    if(a == NULL){
+        exit(1);
+    }
     return !(a->fd == NULL);
 }
 
-pArbre ajouterFilsGauche(pArbre a, int e){
-    if(existeFilsGauche(a)){
-        return a;
-    }
-    a->fg = creerArbre(e);
-    return a;
-}
-
-pArbre ajouterFilsDroit(pArbre a, int e){
-    if(existeFilsDroit(a)){
-        return a;
-    }
-    a->fd = creerArbre(e);
-    return a;
-}
 //affiche la valeur dans le noeud
-void traiter(pArbre a){
-    if(a == NULL){
-        printf("");
-    }
-    else{
-        printf("%d ",a->val);
+void traiter(pArbre_t a){
+    if(a!=NULL){
+        printf("%s ; %d trajets\n",a->ville.nom, a->ville.trajets);
     }
 }
 
-void supprimerFilsGauche(pArbre a){
+void supprimerFilsGauche(pArbre_t a){
     if(a==NULL){
         printf("La file est vide.\n");
         exit(1);
@@ -105,7 +122,7 @@ void supprimerFilsGauche(pArbre a){
     }
 }
 
-void supprimerFilsDroit(pArbre a){
+void supprimerFilsDroit(pArbre_t a){
     if(a==NULL){
         printf("La file est vide.\n");
         exit(1);
@@ -125,23 +142,25 @@ void supprimerFilsDroit(pArbre a){
 }
 
 //parcours RGD
-void parcoursprefixe(pArbre a){
+void parcoursprefixe(pArbre_t a){
     if(a!=NULL){
         traiter(a);
         parcoursprefixe(a->fg);
         parcoursprefixe(a->fd);
     }
 }
+
 //parcours GRD
-void parcoursinfixe(pArbre a){
+void parcoursinfixe(pArbre_t a){
     if(a!=NULL){
         parcoursinfixe(a->fg);
         traiter(a);
         parcoursinfixe(a->fd);
     }
 }
+
 //parcours GDR
-void parcourspostfixe(pArbre a){
+void parcourspostfixe(pArbre_t a){
     if(a!=NULL){
         parcourspostfixe(a->fg);
         parcourspostfixe(a->fd);
@@ -149,205 +168,25 @@ void parcourspostfixe(pArbre a){
     }
 }
 
-int recherche(pArbre a, int e){
-    if(a){
-        if(a->val==e){
-            return 1;
-        }
-        else if(a->val>e){
-            recherche(a->fg,e);
-        }
-        else{
-            recherche(a->fd,e);
-        }
-    }
-    else{
-        return 0;
-    }
-}
-
-// Nombre de noeuds parcourus
-int countrecherche(pArbre a, int e, int i){ 
-    if(a){
-        if(a->val==e){
-            return i+1;
-        }
-        else if(a->val>e){
-            countrecherche(a->fg,e,i+1);
-        }
-        else{
-            countrecherche(a->fd,e,i+1);
-        }
-    }
-    else{
-        printf("\nGros y a pas");
-        return i+1;
-    }
-}
-
-void tritabcroi(int tab[], pArbre a, int *i){
-    if(a!=NULL && *i != 15){
-        tritabcroi(tab,a->fg,i);
-        tab[*i] = a->val;
-        *i +=1;
-        tritabcroi(tab,a->fd,i);
-    }
-}
-
-// On suppose e pas dans a
-pArbre insertABR(pArbre a, int e){ 
-    if(!a){
-        return creerArbre(e);
-    }
-    else{
-        if(e < a->val){
-            if(!a->fg){
-                a->fg = creerArbre(e);
-            }else{
-                a->fg = insertABR(a->fg, e);
-            }
-        }else{
-            if(!a->fd){
-                a->fd = creerArbre(e);
-            }else{
-                a->fd = insertABR(a->fd, e);
-            }
-        }
-        return a;
-    }
-}
-
-// On suppose e pas dans a
-pArbre NoRecinsertABR(pArbre a, int e){
-    if(!a){
-        return creerArbre(e);
-    }
-    if(recherche(a,e)){
-        return a;
-    }
-    while(1){
-        if(e < a->val){
-            if(!a->fg){
-                a->fg = creerArbre(e);
-                return a;
-            }else{
-                a=a->fg;
-            }
-        }else{
-            if(!a->fd){
-                a->fd = creerArbre(e);
-                return a;
-            }else{
-                a=a->fd;
-            }
-        }
+void parcoursDecroissant(pArbre_t a) {
+    if (a != NULL) {
+        parcoursDecroissant(a->fd);
+    traiter(a);
+        parcoursDecroissant(a->fg);
     }
 }
 
 
-
-//retourne max(a,b) (logique)
 int max(int a, int b){
-    return a<b ? b : a;
+    return (a<=b) ? b : a;
 }
 
-//retourne min(a,b) (logique)
 int min(int a, int b){
-    return a<b ? a : b;
+    return (a<=b) ? a : b;
 }
 
-
-//Trouve le mayorant du sous arbre
-int trouveMayorantGauche(pArbre a){
-    if(!a){
-        return INT_MIN;
-    }
-    int maxG = trouveMayorantGauche(a->fg);
-    int maxD = trouveMayorantGauche(a->fd);
-
-    return(max(max(a->val,maxD),maxG));
-}
-
-//Trouve le mayorant du sous arbre
-int trouveMinorantDroit(pArbre a){
-    if(!a){
-        return INT_MAX;
-    }
-    int minG = trouveMinorantDroit(a->fg);
-    int minD = trouveMinorantDroit(a->fd);
-
-    return(max(max(a->val,minD),minG));
-}
-
-//Est-ce un ABR ?
-int YN_ABR(pArbre a){
-    if(!a){
-        return 1;
-    }
-    if(existeFilsGauche(a) && trouveMayorantGauche(a->fg)>=a->val){
-        return 0;
-    }
-    if(existeFilsDroit(a) && trouveMinorantDroit(a->fd)<=a->val){
-        return 0;
-    }
-    if(YN_ABR(a->fd)==0 || YN_ABR(a->fg)==0){
-        return 0;
-    }
-    return 1;
-}
-
-//transforme un AB en ABR
-pArbre transfoABR_commencefin(pArbre a, pArbre b){
-    if(!a){
-        return a;
-    }
-    if(existeFilsDroit(a)){
-        b= transfoABR_commencefin(a->fd,b);
-    }
-    if(existeFilsGauche(a)){
-        b= transfoABR_commencefin(a->fg,b);
-    }
-    int temp = a->val;
-    a = NULL;
-    free(a);
-    b = insertABR(b,temp);
-    return b;
-}
-
-//transforme un AB en ABR
-pArbre transfoABR_commencedebut(pArbre a, pArbre b){
-    if(!a){
-        return a;
-    }
-    else{
-        b=insertABR(b,a->val);
-        transfoABR_commencedebut(a->fg,b);
-        transfoABR_commencedebut(a->fd,b);
-    }
-    return b;
-}
-
-//verifie si n est dans tab
-int estdedans(int tab[],int n,int d){
-    for(int i=0;i<d;i++){
-        if(n==tab[i]){
-            return 1;
-        }
-    }
-    return 0;
-}
-
-//Prend les elements d'un tableau pour faire un ABR
-pArbre tab_en_ABR(int tab[],pArbre a){
-    for(int i=0;i<15;i++){
-        a = insertABR(a,tab[i]);
-    }
-    return a;
-}
-
-
-pArbre rotaGauche(pArbre a){
-    pArbre pivot = a->fd;
+pArbre_t rotaGauche(pArbre_t a){
+    pArbre_t pivot = a->fd;
     a->fd = pivot->fg;
     pivot->fg=a;
     int eq_a = a->eq;
@@ -358,8 +197,8 @@ pArbre rotaGauche(pArbre a){
     return a;
 }
 
-pArbre rotaDroite(pArbre a){
-    pArbre pivot = a->fg;
+pArbre_t rotaDroite(pArbre_t a){
+    pArbre_t pivot = a->fg;
     a->fg = pivot->fd;
     pivot->fd=a;
     int eq_a = a->eq;
@@ -371,192 +210,276 @@ pArbre rotaDroite(pArbre a){
 }
 
 // Double rota G
-pArbre doublerotaG(pArbre a){
+pArbre_t doublerotaG(pArbre_t a){
     a->fd = rotaDroite(a->fd);
     return rotaGauche(a);
 }
 
 // Double rota D
-pArbre doublerotaD(pArbre a){
+pArbre_t doublerotaD(pArbre_t a){
     a->fg = rotaGauche(a->fg);
     return rotaDroite(a);
 }
 
-pArbre equilibrerAVL(pArbre a){
-    if(a->eq>=2){
-        if(a->fg->eq>=0){
-            return rotaGauche(a);
+pArbre_t equilibrerAVL(pArbre_t a){
+    if(a != NULL){
+        if(a->eq>=2){
+            if(a->fd->eq>=0){
+                return rotaGauche(a);
+            }
+            else{
+                return doublerotaG(a);
+            }
         }
-        else{
-            return doublerotaG(a);
+        if(a->eq<=-2){
+            if(a->fg->eq<=0){
+                return rotaDroite(a);
+            }
+            else{
+                return doublerotaD(a);
+            }
         }
     }
-    if(a->eq<=-2){
-        if(a->fg->eq<=0){
-            return rotaDroite(a);
-        }
-        else{
-            return doublerotaD(a);
-        }
-    }
+    
     return a;
 }
 
-pArbre insertionAVL(pArbre a, int e, int* h){
-    if(!a){
+
+// Fonction récursive pour insérer un noeud dans l'arbre AVL selon une chaine de charactere
+pArbre_t insert(pArbre_t node, char name[20], int* h, int* count, int flag) {
+    if (node == NULL){
         *h=1;
-        return creerArbre(e);
+        *count = *count+1;
+        return creerArbre_Ville(name, flag);
     }
-    else if(e<a->val){
-        a->fg =  insertionAVL(a->fg,e,h);
+
+    if (strcmp(name, node->ville.nom) < 0){
+        node->fg = insert(node->fg, name, h, count, flag);
         *h=-*h;
     }
-    else if(e>a->val){
-        a->fd = insertionAVL(a->fd,e,h);
+    else if (strcmp(name, node->ville.nom) > 0){
+        node->fd = insert(node->fd, name, h, count, flag);
     }
-    else{
+    else {
+        // Le nom existe déjà, incrémenter le nombre de trajets
         *h=0;
-        return a;
+        if(flag == 1){
+            node->ville.premier+=1;
+        }
+        node->ville.trajets++;
+        return node;
     }
+
     if(*h!=0){
-        a->eq+=*h;
-        if(a->eq==0){
+        node->eq+=*h;
+        if(node->eq==0){
             *h=0;
         }
         else{
             *h=1;
         }
     }
-    return a;   
+
+    return node;
 }
 
-// rappel :
-// équilibre = hauteur_d - hauteur_g
+// Fonction récursive pour insérer un noeud dans l'arbre AVL selon une chaine de charactere
+pArbre_s insert_trajet(pArbre_s node, int ID, int distance, int* h, int* count) {
+    if (node == NULL){
+        *h=1;
+        *count = *count+1;
+        return creerArbre_Trajet(ID, distance);
+    }
 
-// Strat : trouver le max du sous-arbre gauche.
-pArbre suppMaxGaucheAVL(pArbre arbre, int* h, pArbre racine) {
-    if (arbre->fd) {
-        arbre->fd = suppMaxGaucheAVL(arbre->fd, h, racine);
-        // *h = -*h;
-
-        if (*h != 0) {
-            arbre->eq += *h;
-            arbre = equilibrerAVL(arbre);
-            if (arbre->eq == 0) {
-                // La hauteur a été réduite car on a perdu un fils droit
-                *h = -1;
-            } else {
-                // La hauteur n'a pas changé
-                *h = 0;
-            }
-        }
-        return arbre;
+    if ( ID < node->trajet.IDTrajet ){
+        node->fg = insert_trajet(node->fg,ID,distance,h,count);
+        *h=-*h;
+    }
+    else if( ID > node->trajet.IDTrajet ){
+        node->fd = insert_trajet(node->fd,ID,distance,h,count);
     }
     else {
-        racine->val = arbre->val;
-        pArbre successeur = arbre->fg;
-        free(arbre);
-        *h = -1;
-        return successeur;
+        // Le trajet est deja renseigne
+        *h=0;
+        node->trajet.nb_step++;
+        node->trajet.total+=distance;
+        node->trajet.max = (node->trajet.max < distance) ? distance : node->trajet.max;
+        node->trajet.min = (node->trajet.min > distance) ? distance : node->trajet.min;
+        return node;
     }
 
+    if(*h!=0){
+        node->eq+=*h;
+        if(node->eq==0){
+            *h=0;
+        }
+        else{
+            *h=1;
+        }
+    }
+
+    return node;
 }
 
-pArbre suppAVL(pArbre arbre, int element, int *h){
-    if (arbre == NULL)
-    {
-        *h = 1;
-        return NULL;
+void free_tree_t(pArbre_t node){
+    if (node != NULL) {
+        free_tree_t(node->fg);
+        free_tree_t(node->fd);
+        free(node);
     }
-    else if (element > arbre->val)
-    {
-        arbre->fd = suppAVL(arbre->fd, element, h);
-        // Fils droit supprimé, on laisse l'ajustement avec la valeur par défaut (-1)
-        // car l'équilibre doit baisser dans ce cas.
+}
+
+void free_tree_s(pArbre_s node){
+    if (node != NULL) {
+        free_tree_s(node->fg);
+        free_tree_s(node->fd);
+        free(node);
     }
-    else if (element < arbre->val)
-    {
-        arbre->fg = suppAVL(arbre->fg, element, h);
-        // Fils gauche supprimé, donc la hauteur gauche a baissé de 1.
-        // Alors on doit ajouter de l'équilibre au lieu de soustraire.
-        *h = -*h; 
+}
+
+void AVL_to_Tab(pArbre_t node,Ville* tab,int *n){
+    if(node){
+
+        AVL_to_Tab(node->fg,tab,n);
+
+
+        strcpy(tab[*n].nom,node->ville.nom);
+        tab[*n].trajets=node->ville.trajets;
+        tab[*n].premier=node->ville.premier;
+
+        (*n)++;
         
-        // Explication algébrique (oui je m'ennuie) :
-        // 
-        // Définitions :    eq_prev = hd - hg ; 
-        //
-        //                  eq_nouv = hd - (hg - 1) 
-        //                          = hd - hg + 1
-        //
-        // eq_prev + delta = eq_nouv
-        // ==>  eq_nouv - eq_prev = delta
-        // ==>  delta = 1 
+        AVL_to_Tab(node->fd,tab,n);
     }
-    else
-    {
-        // c'est notre élément !!
-        if (arbre->fd == NULL && arbre->fg == NULL)
-        {
-            // feuille
-            free(arbre);
-            arbre = NULL;
-            *h = -1;
-        }
-        else if (arbre->fg != NULL && arbre->fd == NULL)
-        {
-            // Remplacement par fils gauche
-            pArbre tmp = arbre;
-            arbre = tmp->fg;
-            free(tmp);
-            *h = -1; // Changement de l'hauteur pour le parent (-1 par défaut)
-            return arbre; // On s'arrête là (ne pas ajuster l'équilibre d'un nœud déplacé)
-        }
-        else if (arbre->fg == NULL && arbre->fd != NULL)
-        {
-            // Remplacement par fils droit
-            pArbre tmp = arbre;
-            arbre = tmp->fd;
-            free(tmp);
-            *h = -1; // Changement de l'hauteur pour le parent (-1 par défaut)
-            return arbre; // On s'arrête là (ne pas ajuster l'équilibre d'un nœud déplacé)
-        } else {
-            // Deux non nuls
-            arbre->fg = suppMaxGaucheAVL(arbre->fg, h, arbre);
-            *h = -*h; // Fils gauche retiré, donc équilibre += 1
-        }
-    }
-
-    if (arbre && *h != 0)
-    {
-        arbre->eq += *h; // *h = -1 si fils droit, *h = 1 si fils gauche
-        arbre = equilibrerAVL(arbre); // Équilibrage si nécessaire
-        if (arbre->eq == 0)
-        {
-            // L'arbre (rééquilibré) a perdu ses deux fils, donc la hauteur diminue.
-            *h = -1; // Reset
-        }
-        else
-        {
-            // L'arbre (rééquilibré) a perdu un fils, mais il en reste un autre, donc la hauteur ne change pas.
-            // Alors, plus aucun équilibre ne change à partir de maintenant.
-            *h = 0; // On stop
-        }
-    }
-
-    return arbre;
 }
 
-int powerRec(int a, int b){
-    if(b==0){
-        return 1;
+
+void afficheTab(Ville* tab,int n){
+    for (int i = 0; i < n; i++){
+        printf("\nVille : %s, trajets : %d, premier : %d",tab[i].nom,tab[i].trajets,tab[i].premier);
     }
-    else{
-        return a*powerRec(a,b-1);
-    }
+    
+}
+
+void triBulle(Ville *tab, int taille){
+    int desordre, ncase, etape;
+    Ville temp;
+    etape = taille - 1;
+    do{
+        desordre = 0;
+        for (ncase = 0; ncase < etape; ncase++){
+            if (tab[ncase].trajets < tab[ncase + 1].trajets){
+            desordre = 1;
+            temp = tab[ncase];
+            tab[ncase] = tab[ncase + 1];
+            tab[ncase + 1] = temp;
+            }
+        }
+        etape--;
+    } while (desordre && etape > 0);
 }
 
 int main(int argc, char *argv[]){
-    printf("Bonjour. Il a %d variables, %s",argc,*argv);
+
+    //Traitement -t
+    if(!strcmp(argv[0],"t")){
+        FILE* file = fopen("../data.csv", "r");
+        if (file == NULL) {
+            perror("Erreur lors de l'ouverture du fichier");
+            return 1;
+        }
+
+        char line[256];
+        pArbre_t AVLroot = NULL;
+        int count = 0;
+
+        while (fgets(line, sizeof(line), file)){
+            char *token;
+            char townB[50];
+            int h = 0;
+
+            // Utiliser strtok pour extraire les champs du fichier CSV
+            token = strtok(line, ";");
+            token = strtok(NULL, ";");
+            token = strtok(NULL, ";");
+            token = strtok(NULL, ";");
+            strcpy(townB, token);
+
+            AVLroot = insert(AVLroot, townB, &h, &count, 0);
+        }
+
+        // On revient au debut du fichier pour prendre les villes de départ
+
+        rewind(file);
+
+        while (fgets(line, sizeof(line), file)){
+            char *token;
+            char townA[50];
+            int h = 0;
+            // Utiliser strtok pour extraire les champs du fichier CSV
+            token = strtok(line, ";");
+            token = strtok(NULL, ";");
+            if (atoi(token) == 1){
+                token = strtok(NULL, ";");
+                strcpy(townA, token);
+                AVLroot = insert(AVLroot, townA, &h, &count, 1);
+            }
+        }
+
+        fclose(file);
+
+        printf("\nNb villes = %d\n", count);
+        Ville* tab = (Ville*)malloc(sizeof(Ville)*count);
+        
+        int n = 0;
+
+        AVL_to_Tab(AVLroot,tab,&n);
+        triBulle(tab,count);
+
+        afficheTab(tab,10);
+        //Trier par ordre alpha
+
+        free_tree_t(AVLroot);
+        free(tab);
+    }
+    
+
+    //Traitement -s
+    if(!strcmp(argv[0],"-s")){
+        FILE* file = fopen("../data.csv", "r");
+        if (file == NULL) {
+            perror("Erreur lors de l'ouverture du fichier");
+            return 1;
+        }
+
+        pArbre_s AVL_Trajet = NULL;
+        char line[256];
+        int count = 0;
+
+        while (fgets(line, sizeof(line), file)){
+            char *token;
+            int IDTrajet;
+            int distance;
+            int h = 0;
+
+            // Utiliser strtok pour extraire les champs du fichier CSV
+            token = strtok(line, ";");
+            IDTrajet = atoi(token);
+
+            token = strtok(NULL, ";");
+            token = strtok(NULL, ";");
+            token = strtok(NULL, ";");
+            token = strtok(NULL, ";");
+            distance = atoi(token);
+
+            AVL_Trajet = insert_trajet(AVL_Trajet, IDTrajet, distance, &h, &count);
+        }
+
+        //Mettre en tableau max-min (50 premiers)
+        //Moyenne = total/nb pour utiliser en graph
+        fclose(file);
+        free_tree_s(AVL_Trajet);
+    }
 
     return 0;
 }
