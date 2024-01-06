@@ -24,7 +24,7 @@ void supprimerFilsDroit(pArbre a);
 void supprimerFilsGauche(pArbre a);
 
 
-pArbre creerArbre(char name[20], int trajets, int flag){
+pArbre creerArbre(char name[20], int flag){
     pArbre new = malloc(sizeof(Arbre));
     if(new == NULL){
         exit(1);
@@ -134,15 +134,11 @@ void parcourspostfixe(pArbre a){
     }
 }
 
-void parcoursDecroissant(pArbre a, int* i) {
-    if (a != NULL && *i<15) {
-        parcoursDecroissant(a->fd, i);
-        if(*i<15){
-            traiter(a);
-            (*i)++;
-        }
-
-        parcoursDecroissant(a->fg, i);
+void parcoursDecroissant(pArbre a) {
+    if (a != NULL) {
+        parcoursDecroissant(a->fd);
+    traiter(a);
+        parcoursDecroissant(a->fg);
     }
 }
 
@@ -192,60 +188,35 @@ pArbre doublerotaD(pArbre a){
 }
 
 pArbre equilibrerAVL(pArbre a){
-    if(a->eq>=2){
-        if(a->fg->eq>=0){
-            return rotaGauche(a);
+    if(a != NULL){
+        if(a->eq>=2){
+            if(a->fd->eq>=0){
+                return rotaGauche(a);
+            }
+            else{
+                return doublerotaG(a);
+            }
         }
-        else{
-            return doublerotaG(a);
+        if(a->eq<=-2){
+            if(a->fg->eq<=0){
+                return rotaDroite(a);
+            }
+            else{
+                return doublerotaD(a);
+            }
         }
     }
-    if(a->eq<=-2){
-        if(a->fg->eq<=0){
-            return rotaDroite(a);
-        }
-        else{
-            return doublerotaD(a);
-        }
-    }
+    
     return a;
 }
 
-pArbre insert_by_trips(pArbre root, pArbre node, int* h){
-    if(root == NULL){
-        *h = 1;
-        return creerArbre(node->ville.nom, node->ville.trajets, node->ville.premier);
-    }
-    else if(node->ville.trajets < root->ville.trajets){
-        root->fg = (insert_by_trips(root->fg, node, h));
-        *h = -*h;
-    }
-    else if(node->ville.trajets > root->ville.trajets){
-        root->fd = (insert_by_trips(root->fd, node, h));
-    }
-    else{
-        *h = 0;
-        return root;
-    }
-    if(*h != 0){
-        root->eq = root->eq + *h;
-        root = equilibrerAVL(root);
-        if(root->eq ==0){
-            *h = 0;
-        }
-        else{
-            *h = 1;
-        }
-    }
-    return root;
-}
 
 // Fonction récursive pour insérer un noeud dans l'arbre AVL
 pArbre insert(pArbre node, char name[20], int* h, int* count, int flag) {
     if (node == NULL){
         *h=1;
         *count = *count+1;
-        return creerArbre(name, 1, flag);
+        return creerArbre(name, flag);
     }
 
     if (strcmp(name, node->ville.nom) < 0){
@@ -278,23 +249,12 @@ pArbre insert(pArbre node, char name[20], int* h, int* count, int flag) {
     return node;
 }
 
-void freeAVL(pArbre root){
-    if(root != NULL){
-        freeAVL(root->fg);
-        freeAVL(root->fd);
-        root->fg = NULL;
-        root->fd = NULL;
-        free(root);
+void free_tree(pArbre node){
+    if (node != NULL) {
+        free_tree(node->fg);
+        free_tree(node->fd);
+        free(node);
     }
-}
-
-pArbre AVL_to_AVL(pArbre a, pArbre b, int* h){
-    if(a!=NULL){
-        b = insert_by_trips(b, a, h);
-        AVL_to_AVL(a->fg, b, h);
-        AVL_to_AVL(a->fd, b, h);
-    }
-    return b;
 }
 
 void AVL_to_Tab(pArbre node,Ville* tab,int *n){
@@ -389,14 +349,6 @@ int main(int argc, char *argv[]){
     fclose(file);
 
     printf("\nNb villes = %d\n", count);
-    pArbre AVLsecond = NULL;
-    int h2=0;
-    int i = 0;
-    AVLsecond = AVL_to_AVL(AVLsecond, AVLroot, &h2); //bon jsp pk ça fait de la merde on a des trajets négatifs
-    parcoursDecroissant(AVLsecond, &i);
-
-
-    /*
     Ville* tab = (Ville*)malloc(sizeof(Ville)*count);
     
     int n = 0;
@@ -404,11 +356,10 @@ int main(int argc, char *argv[]){
     AVL_to_Tab(AVLroot,tab,&n);
     triBulle(tab,count);
 
-    afficheTab(tab,10);*/
+    afficheTab(tab,10);
 
-    free(AVLroot);
-    free(AVLsecond);
-    //free(tab);
+    free_tree(AVLroot);
+    free(tab);
     
 
     //Traitement -s
