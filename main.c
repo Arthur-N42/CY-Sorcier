@@ -245,7 +245,7 @@ pArbre_t equilibrerAVL(pArbre_t a){
 }
 
 
-// Fonction récursive pour insérer un noeud dans l'arbre AVL selon une chaine de charactere
+// Fonction recursive pour insérer un noeud dans l'arbre AVL selon une chaine de charactere
 pArbre_t insert(pArbre_t node, char name[20], int* h, int* count, int flag) {
     if (node == NULL){
         *h=1;
@@ -261,7 +261,7 @@ pArbre_t insert(pArbre_t node, char name[20], int* h, int* count, int flag) {
         node->fd = insert(node->fd, name, h, count, flag);
     }
     else {
-        // Le nom existe déjà, incrémenter le nombre de trajets
+        // Le nom existe deja, incrementer le nombre de trajets
         *h=0;
         if(flag == 1){
             node->ville.premier+=1;
@@ -283,7 +283,7 @@ pArbre_t insert(pArbre_t node, char name[20], int* h, int* count, int flag) {
     return node;
 }
 
-// Fonction récursive pour insérer un noeud dans l'arbre AVL selon une chaine de charactere
+// Fonction recursive pour insérer un noeud dans l'arbre AVL selon une chaine de charactere
 pArbre_s insert_trajet(pArbre_s node, int ID, int distance, int* h, int* count) {
     if (node == NULL){
         *h=1;
@@ -337,10 +337,10 @@ void free_tree_s(pArbre_s node){
     }
 }
 
-void AVL_to_Tab(pArbre_t node,Ville* tab,int *n){
+void AVL_to_Tab_t(pArbre_t node,Ville* tab,int *n){
     if(node){
 
-        AVL_to_Tab(node->fg,tab,n);
+        AVL_to_Tab_t(node->fg,tab,n);
 
 
         strcpy(tab[*n].nom,node->ville.nom);
@@ -349,19 +349,43 @@ void AVL_to_Tab(pArbre_t node,Ville* tab,int *n){
 
         (*n)++;
         
-        AVL_to_Tab(node->fd,tab,n);
+        AVL_to_Tab_t(node->fd,tab,n);
+    }
+}
+
+void AVL_to_Tab_s(pArbre_s node,Trajet* tab,int *n){
+    if(node){
+
+        AVL_to_Tab_s(node->fg,tab,n);
+
+        tab[*n].max=node->trajet.max;
+        tab[*n].min=node->trajet.min;
+        tab[*n].nb_step=node->trajet.nb_step;
+        tab[*n].total=node->trajet.total;
+        tab[*n].IDTrajet=node->trajet.IDTrajet;
+
+        (*n)++;
+        
+        AVL_to_Tab_s(node->fd,tab,n);
     }
 }
 
 
-void afficheTab(Ville* tab,int n){
+void afficheTab_t(Ville* tab,int n){
     for (int i = 0; i < n; i++){
         printf("\nVille : %s, trajets : %d, premier : %d",tab[i].nom,tab[i].trajets,tab[i].premier);
     }
     
 }
 
-void triBulle(Ville *tab, int taille){
+void afficheTab_s(Trajet* tab,int n){
+    for (int i = 0; i < n; i++){
+        printf("\nIDTrajet : %d, min : %d, max : %d, total : %d, steps : %d",tab[i].IDTrajet,tab[i].min,tab[i].max,tab[i].total,tab[i].nb_step);
+    }
+    
+}
+
+void triBulle_t(Ville *tab, int taille){
     int desordre, ncase, etape;
     Ville temp;
     etape = taille - 1;
@@ -396,9 +420,10 @@ int main(int argc, char *argv[]){
             char *token;
             char townB[50];
             int h = 0;
-
+            int IDTrajet;
             // Utiliser strtok pour extraire les champs du fichier CSV
             token = strtok(line, ";");
+            IDTrajet = atoi(token);
             token = strtok(NULL, ";");
             token = strtok(NULL, ";");
             token = strtok(NULL, ";");
@@ -432,10 +457,10 @@ int main(int argc, char *argv[]){
         
         int n = 0;
 
-        AVL_to_Tab(AVLroot,tab,&n);
-        triBulle(tab,count);
+        AVL_to_Tab_t(AVLroot,tab,&n);
+        triBulle_t(tab,count);
 
-        afficheTab(tab,10);
+        afficheTab_t(tab,10);
         //Trier par ordre alpha
 
         free_tree_t(AVLroot);
@@ -476,6 +501,14 @@ int main(int argc, char *argv[]){
 
         //Mettre en tableau max-min (50 premiers)
         //Moyenne = total/nb pour utiliser en graph
+        Trajet* tab = (Trajet*)malloc(sizeof(Trajet)*count);
+        int n = 0;
+
+        AVL_to_Tab_s(AVL_Trajet,tab,&n);
+
+        //Trier
+        //Tester
+        afficheTab_s(tab,50);
         fclose(file);
         free_tree_s(AVL_Trajet);
     }

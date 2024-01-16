@@ -75,11 +75,11 @@ fi
 
 if [ $t = 1 ]; then
     gcc -o traitements main.c
-    ./traitements -t $1
+    time ./traitements -t $1
 fi
 
 if [ $s = 1 ]; then
     echo "cool"
     gcc -o traitements main.c
-    ./traitements -s
+    time ./traitements -s $1
 fi
