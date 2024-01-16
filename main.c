@@ -494,7 +494,7 @@ int main(int argc, char *argv[]){
             token = strtok(NULL, ";");
             token = strtok(NULL, ";");
             token = strtok(NULL, ";");
-            distance = atoi(token);
+            distance = atoi(token); // float, utilier atof mdr
 
             AVL_Trajet = insert_trajet(AVL_Trajet, IDTrajet, distance, &h, &count);
         }
