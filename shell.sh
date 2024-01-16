@@ -75,7 +75,7 @@ fi
 
 if [ $t = 1 ]; then
     gcc -o traitements main.c
-    ./traitements -t
+    ./traitements -t $1
 fi
 
 if [ $s = 1 ]; then

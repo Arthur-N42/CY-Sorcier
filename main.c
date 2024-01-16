@@ -380,10 +380,9 @@ void triBulle(Ville *tab, int taille){
 }
 
 int main(int argc, char *argv[]){
-
     //Traitement -t
-    if(!strcmp(argv[0],"t")){
-        FILE* file = fopen("../data.csv", "r");
+    if(!strcmp(argv[1],"-t")){
+        FILE* file = fopen(argv[2], "r");
         if (file == NULL) {
             perror("Erreur lors de l'ouverture du fichier");
             return 1;
@@ -445,8 +444,8 @@ int main(int argc, char *argv[]){
     
 
     //Traitement -s
-    if(!strcmp(argv[0],"-s")){
-        FILE* file = fopen("../data.csv", "r");
+    if(!strcmp(argv[1],"-s")){
+        FILE* file = fopen(argv[2], "r");
         if (file == NULL) {
             perror("Erreur lors de l'ouverture du fichier");
             return 1;
