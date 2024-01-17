@@ -13,9 +13,9 @@ typedef struct Ville {
 
 typedef struct Trajet{
     int IDTrajet;
-    float max;
-    float min;
-    float total;
+    double max;
+    double min;
+    double total;
     int nb_step;
 }Trajet;
 
@@ -284,7 +284,7 @@ pArbre_t insert(pArbre_t node, char name[20], int* h, int* count, int flag) {
 }
 
 // Fonction recursive pour inserer un noeud dans l'arbre AVL selon une chaine de charactere
-pArbre_s insert_trajet(pArbre_s node, int ID, float distance, int* h, int* count) {
+pArbre_s insert_trajet(pArbre_s node, int ID, double distance, int* h, int* count) {
     if (node == NULL){
         *h=1;
         *count = *count+1;
@@ -380,7 +380,7 @@ void afficheTab_t(Ville* tab,int n){
 
 void afficheTab_s(Trajet* tab,int n){
     for (int i = 0; i < n; i++){
-        printf("\nIDTrajet : %d, min : %f, max : %f, total : %f, steps : %d",tab[i].IDTrajet,tab[i].min,tab[i].max,tab[i].total,tab[i].nb_step);
+        printf("\n%d : IDTrajet : %d, min : %f, max : %f, total : %f, steps : %d",i,tab[i].IDTrajet,tab[i].min,tab[i].max,tab[i].total,tab[i].nb_step);
     }
     
 }
@@ -403,28 +403,39 @@ void triBulle_t(Ville *tab, int taille){
     } while (desordre && etape > 0);
 }
 
-void triBulle_s(Trajet *tab, int taille){
-    int desordre, ncase, etape;
+int partitionner(Trajet *tab, int debut, int fin) {
+    double pivot = tab[fin].max - tab[fin].min;
+    int i = debut - 1;
     Trajet temp;
-    etape = taille - 1;
-    do{
-        desordre = 0;
-        for (ncase = 0; ncase < etape; ncase++){
-            if ((tab[ncase].max - tab[ncase].min) < (tab[ncase+1].max - tab[ncase+1].min)){
-            desordre = 1;
-            temp = tab[ncase];
-            tab[ncase] = tab[ncase + 1];
-            tab[ncase + 1] = temp;
-            }
+
+    for (int j = debut; j < fin; j++) {
+        if ((tab[j].max - tab[j].min) > pivot) {
+            i++;
+            temp = tab[i];
+            tab[i] = tab[j];
+            tab[j] = temp;
         }
-        etape--;
-    } while (desordre && etape > 0);
+    }
+    temp = tab[i+1];
+    tab[i+1] = tab[fin];
+    tab[fin] = temp;
+    return i + 1;
+}
+
+void triRapide(Trajet *tableau, int debut, int fin) {
+    if (debut < fin) {
+        int pivot = partitionner(tableau, debut, fin);
+
+        triRapide(tableau, debut, pivot - 1);
+        triRapide(tableau, pivot + 1, fin);
+    }
 }
 
 int main(int argc, char *argv[]){
     printf("Ici");
     //Traitement -t
     if(!strcmp(argv[1],"-t")){
+        printf("lalalala");
         FILE* file = fopen(argv[2], "r");
         if (file == NULL) {
             perror("Erreur lors de l'ouverture du fichier");
@@ -502,7 +513,7 @@ int main(int argc, char *argv[]){
         while (fgets(line, sizeof(line), file)){
             char *token;
             int IDTrajet;
-            float distance;
+            double distance;
             int h = 0;
 
             // Utiliser strtok pour extraire les champs du fichier CSV
@@ -524,13 +535,11 @@ int main(int argc, char *argv[]){
         //Moyenne = total/nb pour utiliser en graph
         Trajet* tab = (Trajet*)malloc(sizeof(Trajet)*count);
         int n = 0;
-        printf("Coucou");
         AVL_to_Tab_s(AVL_Trajet,tab,&n);
-        printf("Coucou2");
         //Trier max - min
         //Tester
-        triBulle_s(tab,count);
-        printf("Coucou3");
+        //triBulle_s(tab,count);
+        triRapide(tab,0,count-1);
         afficheTab_s(tab,50);
         free_tree_s(AVL_Trajet);
     }
