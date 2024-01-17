@@ -74,12 +74,15 @@ if [ $l = 1 ]; then
 fi
 
 if [ $t = 1 ]; then
+    ini_Doss
     gcc -o traitements main.c
     time ./traitements -t $1
 fi
 
 if [ $s = 1 ]; then
-    echo "cool"
+    echo "MAIS PK"
+    ini_Doss
     gcc -o traitements main.c
+    echo "lol"
     time ./traitements -s $1
 fi
