@@ -254,6 +254,64 @@ pArbre_t equilibrerAVL(pArbre_t a){
     return a;
 }
 
+pArbre_s rotaGauche_s(pArbre_s a){
+    pArbre_s pivot = a->fd;
+    a->fd = pivot->fg;
+    pivot->fg=a;
+    int eq_a = a->eq;
+    int eq_p = pivot->eq;
+    a->eq = eq_a - max(eq_p,0)-1;
+    pivot->eq = min(eq_a-2,min(eq_a+eq_p-2,eq_p-1));
+    a = pivot;
+    return a;
+}
+
+pArbre_s rotaDroite_s(pArbre_s a){
+    pArbre_s pivot = a->fg;
+    a->fg = pivot->fd;
+    pivot->fd=a;
+    int eq_a = a->eq;
+    int eq_p = pivot->eq;
+    a->eq = eq_a - min(eq_p,0)+1;
+    pivot->eq = max(eq_a+2,max(eq_a+eq_p+2,eq_p+1));
+    a = pivot;
+    return a;
+}
+
+// Double rota G
+pArbre_s doublerotaG_s(pArbre_s a){
+    a->fd = rotaDroite_s(a->fd);
+    return rotaGauche_s(a);
+}
+
+// Double rota D
+pArbre_s doublerotaD_s(pArbre_s a){
+    a->fg = rotaGauche_s(a->fg);
+    return rotaDroite_s(a);
+}
+
+pArbre_s equilibrerAVL_s(pArbre_s a){
+    if(a != NULL){
+        if(a->eq>=2){
+            if(a->fd->eq>=0){
+                return rotaGauche_s(a);
+            }
+            else{
+                return doublerotaG_s(a);
+            }
+        }
+        if(a->eq<=-2){
+            if(a->fg->eq<=0){
+                return rotaDroite_s(a);
+            }
+            else{
+                return doublerotaD_s(a);
+            }
+        }
+    }
+    
+    return a;
+}
 
 // Fonction recursive pour inserer un noeud dans l'arbre AVL selon une chaine de charactere (par ordre alphabétique) pour le traitement t
 pArbre_t insert(pArbre_t node, char name[30], int* h, int* count, int flag, pArbre_t* insertedNode) {
@@ -284,6 +342,7 @@ pArbre_t insert(pArbre_t node, char name[30], int* h, int* count, int flag, pArb
 
     if(*h!=0){
         node->eq+=*h;
+        node = equilibrerAVL(node);
         if(node->eq==0){
             *h=0;
         }
@@ -335,6 +394,7 @@ pArbre_s insert_trajet(pArbre_s node, int ID, double distance, int* h, int* coun
 
     if(*h!=0){
         node->eq+=*h;
+        node=equilibrerAVL_s(node);
         if(node->eq==0){
             *h=0;
         }
@@ -345,6 +405,7 @@ pArbre_s insert_trajet(pArbre_s node, int ID, double distance, int* h, int* coun
 
     return node;
 }
+
 
 void free_tree_t(pArbre_t node){
     if (node != NULL) {
@@ -410,25 +471,7 @@ void afficheTab_s(Trajet* tab,int n){
     
 }
 
-void triBulle_t(Ville *tab, int taille){
-    int desordre, ncase, etape;
-    Ville temp;
-    etape = taille - 1;
-    do{
-        desordre = 0;
-        for (ncase = 0; ncase < etape; ncase++){
-            if (tab[ncase].trajets < tab[ncase + 1].trajets){
-            desordre = 1;
-            temp = tab[ncase];
-            tab[ncase] = tab[ncase + 1];
-            tab[ncase + 1] = temp;
-            }
-        }
-        etape--;
-    } while (desordre && etape > 0);
-}
-
-int partitionner(Trajet *tab, int debut, int fin) {
+int partitionner_trajet(Trajet *tab, int debut, int fin) {
     double pivot = tab[fin].max - tab[fin].min;
     int i = debut - 1;
     Trajet temp;
@@ -447,12 +490,40 @@ int partitionner(Trajet *tab, int debut, int fin) {
     return i + 1;
 }
 
-void triRapide(Trajet *tableau, int debut, int fin) {
+void triRapide_trajet(Trajet *tableau, int debut, int fin) {
     if (debut < fin) {
-        int pivot = partitionner(tableau, debut, fin);
+        int pivot = partitionner_trajet(tableau, debut, fin);
 
-        triRapide(tableau, debut, pivot - 1);
-        triRapide(tableau, pivot + 1, fin);
+        triRapide_trajet(tableau, debut, pivot - 1);
+        triRapide_trajet(tableau, pivot + 1, fin);
+    }
+}
+
+int partitionner_ville(Ville *tab, int debut, int fin) {
+    double pivot = tab[fin].trajets;
+    int i = debut - 1;
+    Ville temp;
+
+    for (int j = debut; j < fin; j++) {
+        if ((tab[j].trajets) > pivot) {
+            i++;
+            temp = tab[i];
+            tab[i] = tab[j];
+            tab[j] = temp;
+        }
+    }
+    temp = tab[i+1];
+    tab[i+1] = tab[fin];
+    tab[fin] = temp;
+    return i + 1;
+}
+
+void triRapide_ville(Ville *tableau, int debut, int fin) {
+    if (debut < fin) {
+        int pivot = partitionner_ville(tableau, debut, fin);
+
+        triRapide_ville(tableau, debut, pivot - 1);
+        triRapide_ville(tableau, pivot + 1, fin);
     }
 }
 
@@ -531,7 +602,7 @@ int main(int argc, char *argv[]){
         int n = 0;
 
         AVL_to_Tab_t(AVLroot,tab,&n);
-        triBulle_t(tab,count1);
+        triRapide_ville(tab,0,count1-1);
 
         afficheTab_t(tab,10);
         //Trier par ordre alpha
@@ -583,7 +654,7 @@ int main(int argc, char *argv[]){
         //Trier max - min
         //Tester
         //triBulle_s(tab,count);
-        triRapide(tab,0,count-1);
+        triRapide_trajet(tab,0,count-1);
         afficheTab_s(tab,50);
         free_tree_s(AVL_Trajet);
     }*/
