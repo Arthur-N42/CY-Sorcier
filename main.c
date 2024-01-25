@@ -55,7 +55,7 @@ pArbre_t creerArbre_Ville(char name[20], int flag){
     return new;
 }
 
-pArbre_s creerArbre_Trajet(int ID, int distance){
+pArbre_s creerArbre_Trajet(int ID, double distance){
     pArbre_s new = malloc(sizeof(Arbre_s));
     if(new == NULL){
         exit(1);
@@ -423,6 +423,23 @@ void triRapide(Trajet *tableau, int debut, int fin) {
     }
 }
 
+int compare(const void* a, const void* b){
+    double diff_a = ((Trajet*)a)->max - ((Trajet*)a)->min;
+    double diff_b = ((Trajet*)b)->max - ((Trajet*)b)->min;
+
+    if(diff_a < diff_b){
+        return 1;
+    }
+
+    else if (diff_a > diff_b){
+        return -1;
+    }
+
+    else{
+        return 0;
+    }
+}
+
 int main(int argc, char *argv[]){
     //Traitement -t
     if(!strcmp(argv[1],"-t")){
@@ -522,6 +539,10 @@ int main(int argc, char *argv[]){
             token = strtok(NULL, ";");
             distance = atof(token);
         
+            if(IDTrajet == 165538){
+                printf("%f", distance);
+            }
+
             AVL_Trajet = insert_trajet(AVL_Trajet, IDTrajet, distance, &h, &count);
         }
 
@@ -534,7 +555,8 @@ int main(int argc, char *argv[]){
 
         printf("COCUOCUCIUCOCUUCOUOCUO");
 
-        triRapide(tab,0,count-1);
+        //triRapide(tab,0,count-1);
+        qsort(tab, count, sizeof(Trajet), compare);
 
         printf("Lego");
         afficheTab_s(tab,50);
@@ -550,6 +572,7 @@ int main(int argc, char *argv[]){
         fclose(new);
         */
         free_tree_s(AVL_Trajet);
+        free(tab);
     }
 
     return 0;

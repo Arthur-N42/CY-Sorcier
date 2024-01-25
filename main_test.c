@@ -478,53 +478,6 @@ void afficheTab_s(Trajet* tab,int n){
     
 }
 
-int partitionner_trajet(Trajet *tab, int debut, int fin) {
-    double pivot = tab[fin].max - tab[fin].min;
-    int i = debut - 1;
-    Trajet temp;
-
-    for (int j = debut; j < fin; j++) {
-        if ((tab[j].max - tab[j].min) > pivot) {
-            i++;
-            temp = tab[i];
-            tab[i] = tab[j];
-            tab[j] = temp;
-        }
-    }
-    temp = tab[i+1];
-    tab[i+1] = tab[fin];
-    tab[fin] = temp;
-    return i + 1;
-}
-
-void triRapide_trajet(Trajet *tableau, int debut, int fin) {
-    if (debut < fin) {
-        int pivot = partitionner_trajet(tableau, debut, fin);
-
-        triRapide_trajet(tableau, debut, pivot - 1);
-        triRapide_trajet(tableau, pivot + 1, fin);
-    }
-}
-
-int partitionner_ville(Ville *tab, int debut, int fin) {
-    double pivot = tab[fin].trajets;
-    int i = debut - 1;
-    Ville temp;
-
-    for (int j = debut; j < fin; j++) {
-        if ((tab[j].trajets) > pivot) {
-            i++;
-            temp = tab[i];
-            tab[i] = tab[j];
-            tab[j] = temp;
-        }
-    }
-    temp = tab[i+1];
-    tab[i+1] = tab[fin];
-    tab[fin] = temp;
-    return i + 1;
-}
-
 int compareNames(const void* a, const void* b){
     const Ville *first = (const Ville *)a;
     const Ville *second = (const Ville *)b;
@@ -533,12 +486,20 @@ int compareNames(const void* a, const void* b){
     return strcmp(first->nom, second->nom);
 }
 
-void triRapide_ville(Ville *tableau, int debut, int fin) {
-    if (debut < fin) {
-        int pivot = partitionner_ville(tableau, debut, fin);
+int compareTrajets(const void* a, const void* b){
+    const Ville *first = (const Ville *)a;
+    const Ville *second = (const Ville *)b;
 
-        triRapide_ville(tableau, debut, pivot - 1);
-        triRapide_ville(tableau, pivot + 1, fin);
+    if(first->trajets < second->trajets){
+        return 1;
+    }
+
+    else if (first->trajets > second->trajets){
+        return -1;
+    }
+
+    else{
+        return 0;
     }
 }
 
@@ -618,23 +579,22 @@ int main(int argc, char *argv[]){
         int n = 0;
 
         AVL_to_Tab_t(AVLroot,tab,&n);
-        triRapide_ville(tab,0,count1-1);
+        qsort(tab, count1, sizeof(Ville), compareTrajets);
 
-        //afficheTab_t(tab,10);
         //Trier par ordre alpha
+        tab2 = putInTab_t(tab,10, tab2);
+        qsort(tab2, 10, sizeof(Ville), compareNames);
+        afficheTab_t(tab2,10);
+
         FILE* new = fopen("temp/data_t.txt", "w");
 
         for (int i = 0; i < 10; i++){
-            if(file){
-                fprintf(new, "%s;%d;%d\n" , tab[i].nom,tab[i].trajets,tab[i].premier);
+            if(new){
+                fprintf(new, "%s;%d;%d\n" , tab2[i].nom,tab2[i].trajets,tab2[i].premier);
             }
         }
         
         fclose(new);
-        
-        tab2 = putInTab_t(tab,10, tab2);
-        qsort(tab2, 10, sizeof(Ville), compareNames);
-        afficheTab_t(tab2,10);
 
         free_tree_t(AVLroot);
         free_tree_s(AVL_Trajet);
