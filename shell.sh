@@ -63,25 +63,21 @@ if [ $d1 = 1 ]; then
 fi  
 
 if [ $d2 = 1 ]; then
-    echo "cool"
     time awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10 # ~2.2s exec
 fi
 
 if [ $l = 1 ]; then
-    echo "cool"
     #A tester
     time awk -F';' 'NR > 1 { trips[$1]+=$5 } END { for (distance in trips) print distance, trips[distance] }' $1 | sort -k3 -nr | head -10 # 
     
 fi
 
 if [ $t = 1 ]; then
-    echo "cool"
     gcc -o traitements main.c
     ./traitements -t
 fi
 
 if [ $s = 1 ]; then
-    echo "cool"
     gcc -o traitements main.c
     ./traitements -s
 fi
