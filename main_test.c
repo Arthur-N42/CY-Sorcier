@@ -464,6 +464,13 @@ void afficheTab_t(Ville* tab,int n){
     
 }
 
+Ville* putInTab_t(Ville* tab, int size, Ville* tab2){
+    for (int i = 0; i < size; i++){
+        tab2[i] = tab[i];
+    }
+    return tab2;
+}
+
 void afficheTab_s(Trajet* tab,int n){
     for (int i = 0; i < n; i++){
         printf("\n%d : IDTrajet : %d, min : %f, max : %f, total : %f, steps : %d",i,tab[i].IDTrajet,tab[i].min,tab[i].max,tab[i].total,tab[i].nb_step);
@@ -516,6 +523,14 @@ int partitionner_ville(Ville *tab, int debut, int fin) {
     tab[i+1] = tab[fin];
     tab[fin] = temp;
     return i + 1;
+}
+
+int compareNames(const void* a, const void* b){
+    const Ville *first = (const Ville *)a;
+    const Ville *second = (const Ville *)b;
+
+    // Use strcmp to compare the names alphabetically
+    return strcmp(first->nom, second->nom);
 }
 
 void triRapide_ville(Ville *tableau, int debut, int fin) {
@@ -598,7 +613,8 @@ int main(int argc, char *argv[]){
 
         printf("\nNb villes = %d\n",count1);
         Ville* tab = (Ville*)malloc(sizeof(Ville)*count1);
-        
+        Ville* tab2 = (Ville*)malloc(sizeof(Ville)*10);
+
         int n = 0;
 
         AVL_to_Tab_t(AVLroot,tab,&n);
@@ -615,11 +631,15 @@ int main(int argc, char *argv[]){
         }
         
         fclose(new);
+        
+        tab2 = putInTab_t(tab,10, tab2);
+        qsort(tab2, 10, sizeof(Ville), compareNames);
+        afficheTab_t(tab2,10);
 
         free_tree_t(AVLroot);
         free_tree_s(AVL_Trajet);
         free(tab);
-
+        free(tab2);
     
     /*
     //Traitement -s
