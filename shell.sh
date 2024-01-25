@@ -59,25 +59,40 @@ if [ $d1 = 1 ]; then
     # NR > 1 ignore la ligne 1 
     # Utilise un dictionnaire et incremente le nombre de trajet pour un conducteur si la paire (ID - Conducteur) n'a pas ete "ajoutee"
     # Trie dans l'ordre decroissant et affiche les 10 premiers
-    time awk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10
+    time mawk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10 # ~4.3s
 fi  
 
 if [ $d2 = 1 ]; then
+<<<<<<< HEAD
     time awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10 # ~2.2s exec
+=======
+    
+    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10 # ~2.2s exec
+>>>>>>> 681403d0f91d8ab1daa105a4f8d2e5bfcd01e597
 fi
 
 if [ $l = 1 ]; then
     #A tester
-    time awk -F';' 'NR > 1 { trips[$1]+=$5 } END { for (distance in trips) print distance, trips[distance] }' $1 | sort -k3 -nr | head -10 # 
+    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$1]+=$5 } END { for (distance in trips) print distance, trips[distance] }' $1 | sort -k2 -nr | head -10 # ~4.6s
     
 fi
 
 if [ $t = 1 ]; then
+<<<<<<< HEAD
+=======
+    ini_Doss
+>>>>>>> 681403d0f91d8ab1daa105a4f8d2e5bfcd01e597
     gcc -o traitements main.c
-    ./traitements -t
+    time ./traitements -t $1
 fi
 
 if [ $s = 1 ]; then
+<<<<<<< HEAD
+=======
+    echo "MAIS PK"
+    ini_Doss
+>>>>>>> 681403d0f91d8ab1daa105a4f8d2e5bfcd01e597
     gcc -o traitements main.c
-    ./traitements -s
+    echo "lol"
+    time ./traitements -s $1
 fi
