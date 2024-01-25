@@ -1,4 +1,7 @@
 #!/bin/bash
+
+export PATH="C:\MinGW\bin:$PATH"
+
 d1=0
 d2=0
 l=0
@@ -44,55 +47,41 @@ for (( i=2 ; i<=$# ; i++ )) ; do
     esac
 done
 
-ini_Doss() {
-    if [ -d "temp" ]; then
-        rm -rf temp
-    fi
-    mkdir temp
-    if [ ! -d "images" ]; then
-        mkdir images
-    fi
-}
+# Creation dossiers, nettoyage de temp
+
+if [ -d "temp" ]; then
+    rm -rf temp
+fi
+mkdir temp
+if [ ! -d "images" ]; then
+    mkdir images
+fi
+
 
 if [ $d1 = 1 ]; then
-    ini_Doss
     # NR > 1 ignore la ligne 1 
     # Utilise un dictionnaire et incremente le nombre de trajet pour un conducteur si la paire (ID - Conducteur) n'a pas ete "ajoutee"
     # Trie dans l'ordre decroissant et affiche les 10 premiers
-    time mawk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10 # ~4.3s
+    time mawk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, ";" , trips[driver] }' $1 | sort -k2 -nr -t ";" | head -10 > temp/data_d1.txt # ~4.3s
+    #creation graph
 fi  
 
 if [ $d2 = 1 ]; then
-<<<<<<< HEAD
-    time awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10 # ~2.2s exec
-=======
-    
-    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, trips[driver] }' $1 | sort -k3 -nr | head -10 # ~2.2s exec
->>>>>>> 681403d0f91d8ab1daa105a4f8d2e5bfcd01e597
+    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, ";", trips[driver] }' $1 | sort -k2 -nr -t ";" | head -10 > temp/data_d2.txt # ~2.2s exec
+    #creation graph
 fi
 
 if [ $l = 1 ]; then
-    #A tester
-    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$1]+=$5 } END { for (distance in trips) print distance, trips[distance] }' $1 | sort -k2 -nr | head -10 # ~4.6s
-    
+    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$1]+=$5 } END { for (distance in trips) print distance, ";" , trips[distance] }' $1 | sort -k2 -nr -t ";" | head -10 > temp/data_l.txt # ~4.6s
+    #creation graph
 fi
 
 if [ $t = 1 ]; then
-<<<<<<< HEAD
-=======
-    ini_Doss
->>>>>>> 681403d0f91d8ab1daa105a4f8d2e5bfcd01e597
-    gcc -o traitements main.c
-    time ./traitements -t $1
+    gcc -o traitements.exe main.c
+    time ./traitements.exe -t $1
 fi
 
 if [ $s = 1 ]; then
-<<<<<<< HEAD
-=======
-    echo "MAIS PK"
-    ini_Doss
->>>>>>> 681403d0f91d8ab1daa105a4f8d2e5bfcd01e597
-    gcc -o traitements main.c
-    echo "lol"
-    time ./traitements -s $1
+    gcc -o traitements.exe main.c
+    time ./traitements.exe -s $1
 fi

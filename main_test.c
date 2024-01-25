@@ -604,12 +604,22 @@ int main(int argc, char *argv[]){
         AVL_to_Tab_t(AVLroot,tab,&n);
         triRapide_ville(tab,0,count1-1);
 
-        afficheTab_t(tab,10);
+        //afficheTab_t(tab,10);
         //Trier par ordre alpha
+        FILE* new = fopen("temp/data_t.txt", "w");
+
+        for (int i = 0; i < 10; i++){
+            if(file){
+                fprintf(new, "%s;%d;%d\n" , tab[i].nom,tab[i].trajets,tab[i].premier);
+            }
+        }
+        
+        fclose(new);
 
         free_tree_t(AVLroot);
         free_tree_s(AVL_Trajet);
         free(tab);
+
     
     /*
     //Traitement -s

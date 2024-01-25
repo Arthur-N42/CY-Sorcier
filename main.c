@@ -370,14 +370,6 @@ void AVL_to_Tab_s(pArbre_s node,Trajet* tab,int *n){
     }
 }
 
-
-void afficheTab_t(Ville* tab,int n){
-    for (int i = 0; i < n; i++){
-        printf("\nVille : %s, trajets : %d, premier : %d",tab[i].nom,tab[i].trajets,tab[i].premier);
-    }
-    
-}
-
 void afficheTab_s(Trajet* tab,int n){
     for (int i = 0; i < n; i++){
         printf("\n%d : IDTrajet : %d, min : %f, max : %f, total : %f, steps : %d",i,tab[i].IDTrajet,tab[i].min,tab[i].max,tab[i].total,tab[i].nb_step);
@@ -432,10 +424,8 @@ void triRapide(Trajet *tableau, int debut, int fin) {
 }
 
 int main(int argc, char *argv[]){
-    printf("Ici");
     //Traitement -t
     if(!strcmp(argv[1],"-t")){
-        printf("lalalala");
         FILE* file = fopen(argv[2], "r");
         if (file == NULL) {
             perror("Erreur lors de l'ouverture du fichier");
@@ -479,10 +469,8 @@ int main(int argc, char *argv[]){
                 AVLroot = insert(AVLroot, townA, &h, &count, 1);
             }
         }
-
         fclose(file);
 
-        printf("\nNb villes = %d\n",count);
         Ville* tab = (Ville*)malloc(sizeof(Ville)*count);
         
         int n = 0;
@@ -490,8 +478,17 @@ int main(int argc, char *argv[]){
         AVL_to_Tab_t(AVLroot,tab,&n);
         triBulle_t(tab,count);
 
-        afficheTab_t(tab,10);
         //Trier par ordre alpha
+
+        FILE* new = fopen("temp/data_t.txt", "w"); // Creation du fichier stockant les donnees
+
+        for (int i = 0; i < 10; i++){
+            if(file){
+                fprintf(new, "%s;%d;%d\n" , tab[i].nom,tab[i].trajets,tab[i].premier);
+            }
+        }
+        
+        fclose(new);
 
         free_tree_t(AVLroot);
         free(tab);
@@ -499,7 +496,6 @@ int main(int argc, char *argv[]){
     
     //Traitement -s
     if(!strcmp(argv[1],"-s")){
-        printf("Coucou ooo");
         FILE* file = fopen(argv[2], "r");
         if (file == NULL) {
             perror("Erreur lors de l'ouverture du fichier");
@@ -531,16 +527,28 @@ int main(int argc, char *argv[]){
 
         fclose(file);
         
-        //Mettre en tableau max-min (50 premiers)
         //Moyenne = total/nb pour utiliser en graph
         Trajet* tab = (Trajet*)malloc(sizeof(Trajet)*count);
         int n = 0;
         AVL_to_Tab_s(AVL_Trajet,tab,&n);
-        //Trier max - min
-        //Tester
-        //triBulle_s(tab,count);
+
+        printf("COCUOCUCIUCOCUUCOUOCUO");
+
         triRapide(tab,0,count-1);
+
+        printf("Lego");
         afficheTab_s(tab,50);
+        printf("Legooooooo");
+        /*FILE* new = fopen("temp/data_s.txt", "w");
+
+        for (int i = 0; i < 50; i++){
+            if(file){
+                fprintf(new, "");
+            }
+        }
+        
+        fclose(new);
+        */
         free_tree_s(AVL_Trajet);
     }
 
