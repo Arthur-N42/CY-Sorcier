@@ -1,63 +1,69 @@
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
-#include <limits.h>
 
-typedef struct Ville {
+typedef struct Ville
+{
     int trajets;
     char nom[30];
     int premier;
-}Ville;
+} Ville;
 
-typedef struct Trajet{
+typedef struct Arbre_t
+{
+    Ville ville;
+    int eq;
+    struct Arbre_t *fg;
+    struct Arbre_t *fd;
+} Arbre_t;
+
+typedef Arbre_t *pArbre_t;
+
+typedef struct Trajet
+{
     int IDTrajet;
     double max;
     double min;
     double total;
     int nb_step;
-}Trajet;
+    pArbre_t villes[60];
+} Trajet;
 
-typedef struct Arbre_t{
-    Ville ville;
-    int eq;
-    struct Arbre_t* fg;
-    struct Arbre_t* fd;
-}Arbre_t;
-
-typedef struct Arbre_s{
+typedef struct Arbre_s
+{
     int eq;
     Trajet trajet;
-    struct Arbre_s* fg;
-    struct Arbre_s* fd;
-}Arbre_s;
+    struct Arbre_s *fg;
+    struct Arbre_s *fd;
+} Arbre_s;
 
+typedef Arbre_s *pArbre_s;
 
-typedef Arbre_t* pArbre_t;
-typedef Arbre_s* pArbre_s;
-
-void supprimerFilsDroit(pArbre_t a);
-void supprimerFilsGauche(pArbre_t a);
-
-
-pArbre_t creerArbre_Ville(char name[20], int flag){
+// Constructeur d'un noeud pour les AVL de Ville
+pArbre_t creerArbre_Ville(char name[30], int flag)
+{
     pArbre_t new = malloc(sizeof(Arbre_t));
-    if(new == NULL){
+    if (new == NULL)
+    {
         exit(1);
     }
+
     strcpy(new->ville.nom, name);
-    new->ville.trajets = 1;
-    new->ville.premier=flag;
-    new->eq=0;
-    new->fd=NULL;
-    new->fg=NULL;
+    new->ville.trajets = 0;
+    new->ville.premier = flag; // indicateur booléon si la ville est ville de départ (1) ou non (0)
+
+    new->eq = 0;
+    new->fd = NULL;
+    new->fg = NULL;
     return new;
 }
 
-pArbre_s creerArbre_Trajet(int ID, double distance){
+// Constructeur d'un noeud pour les AVL de Trajet (traitement S)
+pArbre_s creerArbre_Trajet(int ID, double distance)
+{
     pArbre_s new = malloc(sizeof(Arbre_s));
-    if(new == NULL){
+    if (new == NULL)
+    {
         exit(1);
     }
     new->trajet.IDTrajet = ID;
@@ -65,256 +71,315 @@ pArbre_s creerArbre_Trajet(int ID, double distance){
     new->trajet.min = distance;
     new->trajet.total = distance;
     new->trajet.nb_step = 1;
-    new->eq=0;
-    new->fd=NULL;
-    new->fg=NULL;
+
+    for (int i = 0; i < 60; i++)
+    {
+        new->trajet.villes[i] = NULL;
+    }
+
+    new->eq = 0;
+    new->fd = NULL;
+    new->fg = NULL;
     return new;
 }
 
-int hauteur(pArbre_t a) {
-    if (a == NULL) {
-        return -1;
-    } else {
-        int hg = hauteur(a->fg);
-        int hd = hauteur(a->fd);
-        return 1 + (hg > hd ? hg : hd); // remonte de chaque feuille : 1+1+... et a chaque noeud 
-        //se demande quel sous arbre est le + grand
-    }
+int max(int a, int b)
+{
+    return (a <= b) ? b : a;
 }
 
-int existeFilsGauche(pArbre_t a){
-    if(a == NULL){
-        exit(1);
-    }
-    return !(a->fg == NULL);
+int min(int a, int b)
+{
+    return (a <= b) ? a : b;
 }
 
-int existeFilsDroit(pArbre_t a){
-    if(a == NULL){
-        exit(1);
-    }
-    return !(a->fd == NULL);
-}
-
-//affiche la valeur dans le noeud
-void traiter(pArbre_t a){
-    if(a!=NULL){
-        printf("%s ; %d trajets\n",a->ville.nom, a->ville.trajets);
-    }
-}
-
-void supprimerFilsGauche(pArbre_t a){
-    if(a==NULL){
-        printf("La file est vide.\n");
-        exit(1);
-    }
-    else if(existeFilsGauche(a)){
-
-        if(existeFilsGauche(a->fg)){
-            supprimerFilsGauche(a->fg);
-        }
-        
-        if(existeFilsDroit(a->fg)){
-            supprimerFilsDroit(a->fg);
-        }
-        a->fg=NULL;
-        free(a->fg);
-    }
-}
-
-void supprimerFilsDroit(pArbre_t a){
-    if(a==NULL){
-        printf("La file est vide.\n");
-        exit(1);
-    }
-    else if(existeFilsDroit(a)){
-
-        if(existeFilsGauche(a->fd)){
-            supprimerFilsGauche(a->fd);
-        }
-
-        if(existeFilsDroit(a->fd)){
-            supprimerFilsDroit(a->fd);
-        }
-        a->fd=NULL;
-        free(a->fd);
-    }
-}
-
-//parcours RGD
-void parcoursprefixe(pArbre_t a){
-    if(a!=NULL){
-        traiter(a);
-        parcoursprefixe(a->fg);
-        parcoursprefixe(a->fd);
-    }
-}
-
-//parcours GRD
-void parcoursinfixe(pArbre_t a){
-    if(a!=NULL){
-        parcoursinfixe(a->fg);
-        traiter(a);
-        parcoursinfixe(a->fd);
-    }
-}
-
-//parcours GDR
-void parcourspostfixe(pArbre_t a){
-    if(a!=NULL){
-        parcourspostfixe(a->fg);
-        parcourspostfixe(a->fd);
-        traiter(a);
-    }
-}
-
-void parcoursDecroissant(pArbre_t a) {
-    if (a != NULL) {
-        parcoursDecroissant(a->fd);
-    traiter(a);
-        parcoursDecroissant(a->fg);
-    }
-}
-
-
-int max(int a, int b){
-    return (a<=b) ? b : a;
-}
-
-int min(int a, int b){
-    return (a<=b) ? a : b;
-}
-
-pArbre_t rotaGauche(pArbre_t a){
+pArbre_t rotaGauche(pArbre_t a)
+{
     pArbre_t pivot = a->fd;
     a->fd = pivot->fg;
-    pivot->fg=a;
+    pivot->fg = a;
     int eq_a = a->eq;
     int eq_p = pivot->eq;
-    a->eq = eq_a - max(eq_p,0)-1;
-    pivot->eq = min(eq_a-2,min(eq_a+eq_p-2,eq_p-1));
+    a->eq = eq_a - max(eq_p, 0) - 1;
+    pivot->eq = min(eq_a - 2, min(eq_a + eq_p - 2, eq_p - 1));
     a = pivot;
     return a;
 }
 
-pArbre_t rotaDroite(pArbre_t a){
+pArbre_t rotaDroite(pArbre_t a)
+{
     pArbre_t pivot = a->fg;
     a->fg = pivot->fd;
-    pivot->fd=a;
+    pivot->fd = a;
     int eq_a = a->eq;
     int eq_p = pivot->eq;
-    a->eq = eq_a - min(eq_p,0)+1;
-    pivot->eq = max(eq_a+2,max(eq_a+eq_p+2,eq_p+1));
+    a->eq = eq_a - min(eq_p, 0) + 1;
+    pivot->eq = max(eq_a + 2, max(eq_a + eq_p + 2, eq_p + 1));
     a = pivot;
     return a;
 }
 
 // Double rota G
-pArbre_t doublerotaG(pArbre_t a){
+pArbre_t doublerotaG(pArbre_t a)
+{
     a->fd = rotaDroite(a->fd);
     return rotaGauche(a);
 }
 
 // Double rota D
-pArbre_t doublerotaD(pArbre_t a){
+pArbre_t doublerotaD(pArbre_t a)
+{
     a->fg = rotaGauche(a->fg);
     return rotaDroite(a);
 }
 
-pArbre_t equilibrerAVL(pArbre_t a){
-    if(a != NULL){
-        if(a->eq>=2){
-            if(a->fd->eq>=0){
+// Fonction d'équilibrage des AVL de Ville
+pArbre_t equilibrerAVL_t(pArbre_t a)
+{
+    if (a != NULL)
+    {
+        if (a->eq >= 2)
+        {
+            if (a->fd->eq >= 0)
+            {
                 return rotaGauche(a);
             }
-            else{
+            else
+            {
                 return doublerotaG(a);
             }
         }
-        if(a->eq<=-2){
-            if(a->fg->eq<=0){
+        if (a->eq <= -2)
+        {
+            if (a->fg->eq <= 0)
+            {
                 return rotaDroite(a);
             }
-            else{
+            else
+            {
                 return doublerotaD(a);
             }
         }
     }
-    
+
     return a;
 }
 
+pArbre_s rotaGauche_s(pArbre_s a)
+{
+    pArbre_s pivot = a->fd;
+    a->fd = pivot->fg;
+    pivot->fg = a;
+    int eq_a = a->eq;
+    int eq_p = pivot->eq;
+    a->eq = eq_a - max(eq_p, 0) - 1;
+    pivot->eq = min(eq_a - 2, min(eq_a + eq_p - 2, eq_p - 1));
+    a = pivot;
+    return a;
+}
 
-// Fonction recursive pour inserer un noeud dans l'arbre AVL selon une chaine de charactere
-pArbre_t insert(pArbre_t node, char name[20], int* h, int* count, int flag) {
-    if (node == NULL){
-        *h=1;
-        *count = *count+1;
-        return creerArbre_Ville(name, flag);
-    }
+pArbre_s rotaDroite_s(pArbre_s a)
+{
+    pArbre_s pivot = a->fg;
+    a->fg = pivot->fd;
+    pivot->fd = a;
+    int eq_a = a->eq;
+    int eq_p = pivot->eq;
+    a->eq = eq_a - min(eq_p, 0) + 1;
+    pivot->eq = max(eq_a + 2, max(eq_a + eq_p + 2, eq_p + 1));
+    a = pivot;
+    return a;
+}
 
-    if (strcmp(name, node->ville.nom) < 0){
-        node->fg = insert(node->fg, name, h, count, flag);
-        *h=-*h;
-    }
-    else if (strcmp(name, node->ville.nom) > 0){
-        node->fd = insert(node->fd, name, h, count, flag);
-    }
-    else {
-        // Le nom existe deja, incrementer le nombre de trajets
-        *h=0;
-        if(flag == 1){
-            node->ville.premier+=1;
+// Double rota G
+pArbre_s doublerotaG_s(pArbre_s a)
+{
+    a->fd = rotaDroite_s(a->fd);
+    return rotaGauche_s(a);
+}
+
+// Double rota D
+pArbre_s doublerotaD_s(pArbre_s a)
+{
+    a->fg = rotaGauche_s(a->fg);
+    return rotaDroite_s(a);
+}
+
+// Fonction d'équilibrage des AVL de Trajet
+pArbre_s equilibrerAVL_s(pArbre_s a)
+{
+    if (a != NULL)
+    {
+        if (a->eq >= 2)
+        {
+            if (a->fd->eq >= 0)
+            {
+                return rotaGauche_s(a);
+            }
+            else
+            {
+                return doublerotaG_s(a);
+            }
         }
-        node->ville.trajets++;
+        if (a->eq <= -2)
+        {
+            if (a->fg->eq <= 0)
+            {
+                return rotaDroite_s(a);
+            }
+            else
+            {
+                return doublerotaD_s(a);
+            }
+        }
+    }
+
+    return a;
+}
+
+// Traitement -t : Fonction recursive pour inserer un noeud dans l'arbre AVL de Ville selon une chaine de caractères (arbre trié par ordre alphabétique de cette chaîne)
+pArbre_t insert_ville(pArbre_t node, char name[30], int *h, int *count, int flag, pArbre_t *insertedNode){
+
+    if (node == NULL){ // La ville n'est pas déjà dans l'AVL, créer son noeud et la rajouter. Incrémenter le compte du nombre d'éléments de l'AVL aussi
+        *h = 1;
+        *count = *count + 1;
+        node = creerArbre_Ville(name, flag);
+        *insertedNode = node; // La mémoriser comme dernière ville insérée dans l'AVL des Villes
         return node;
     }
 
-    if(*h!=0){
-        node->eq+=*h;
-        if(node->eq==0){
-            *h=0;
+    if (strcmp(name, node->ville.nom) < 0){
+        node->fg = insert_ville(node->fg, name, h, count, flag, insertedNode);
+        *h = -*h;
+    }
+
+    else if (strcmp(name, node->ville.nom) > 0){
+        node->fd = insert_ville(node->fd, name, h, count, flag, insertedNode);
+    }
+
+    else{
+
+        // La ville est déjà dans l'AVL
+        *h = 0;
+        *insertedNode = node; // La mémoriser comme dernière ville insérée dans l'AVL des Villes
+
+        if (flag == 1){
+            node->ville.premier += 1; // Si marquée comme ville de départ, incrémenter le nombre de fois qu'elle est ville de départ
         }
+
+        return node;
+    }
+
+    if (*h != 0){ // Rééquilibrage
+
+        node->eq += *h;
+        node = equilibrerAVL_t(node);
+        if (node->eq == 0){
+            *h = 0;
+        }
+
         else{
-            *h=1;
+            *h = 1;
         }
     }
 
     return node;
 }
 
-// Fonction recursive pour inserer un noeud dans l'arbre AVL selon une chaine de charactere
-pArbre_s insert_trajet(pArbre_s node, int ID, double distance, int* h, int* count) {
-    if (node == NULL){
-        *h=1;
-        *count = *count+1;
-        return creerArbre_Trajet(ID, distance);
-    }
+// Traitement -s : Fonction recursive pour inserer un noeud dans l'arbre AVL de Trajet selon un trajet
+pArbre_s insert_trajet_s(pArbre_s node, int ID, double distance, int *h, int *count){
 
-    if ( ID < node->trajet.IDTrajet ){
-        node->fg = insert_trajet(node->fg,ID,distance,h,count);
-        *h=-*h;
-    }
-    else if( ID > node->trajet.IDTrajet ){
-        node->fd = insert_trajet(node->fd,ID,distance,h,count);
-    }
-    else {
-        // Le trajet est deja renseigne
-        *h=0;
-        node->trajet.nb_step++;
-        node->trajet.total+=distance;
-        node->trajet.max = (node->trajet.max < distance) ? distance : node->trajet.max;
-        node->trajet.min = (node->trajet.min > distance) ? distance : node->trajet.min;
+    if (node == NULL){ // Le trajet n'est pas déjà dans l'AVL, créer son noeud et le rajouter. Incrémenter le compte du nombre d'éléments de l'AVL aussi
+        *h = 1;
+        *count = *count + 1;
+        node = creerArbre_Trajet(ID, distance);
         return node;
     }
 
-    if(*h!=0){
-        node->eq+=*h;
-        if(node->eq==0){
-            *h=0;
+    if (ID < node->trajet.IDTrajet){
+        node->fg = insert_trajet_s(node->fg, ID, distance, h, count);
+        *h = -*h;
+    }
+
+    else if (ID > node->trajet.IDTrajet){
+        node->fd = insert_trajet_s(node->fd, ID, distance, h, count);
+    }
+
+    else{
+
+        // Le trajet est déjà dans l'AVL
+        *h = 0;
+        node->trajet.nb_step++; // Augmenter son nombre d'étapes
+        node->trajet.total += distance; // Ajouter la distance parcourue de l'étape à la distance totale du trajet
+        node->trajet.max = (node->trajet.max < distance) ? distance : node->trajet.max; // Mise à jour de la distance min
+        node->trajet.min = (node->trajet.min > distance) ? distance : node->trajet.min; // Mise à jour de la distance max
+
+        return node;
+    }
+
+    if (*h != 0){ // Rééquilibrage
+
+        node->eq += *h;
+        node = equilibrerAVL_s(node);
+        if (node->eq == 0){
+            *h = 0;
         }
         else{
-            *h=1;
+            *h = 1;
+        }
+    }
+
+    return node;
+}
+
+// TRAITEMENT -T UNIQUEMENT : Fonction recursive pour inserer un noeud dans l'arbre AVL de Trajet selon un trajet
+pArbre_s insert_trajet_t(pArbre_s node, int ID, int *h, pArbre_t *city)
+{
+    if (node == NULL){ // Le trajet n'est pas déjà dans l'AVL, créer son noeud et le rajouter.
+        *h = 1;
+        node = creerArbre_Trajet(ID, 0);
+        node->trajet.villes[0] = *city; // Ajouter la dernière ville ajoutée à l'AVL des villes à la liste des villes parcourues par le trajet
+        (*city)->ville.trajets += 1; // Incrémenter le nombre de trajets qui parcourent cette ville
+        return node;
+    }
+
+    if (ID < node->trajet.IDTrajet){
+        node->fg = insert_trajet_t(node->fg, ID, h, city);
+        *h = -*h;
+    }
+
+    else if (ID > node->trajet.IDTrajet){
+        node->fd = insert_trajet_t(node->fd, ID, h, city);
+    }
+
+    else{
+
+        // Le trajet est deja renseigné
+        *h = 0;
+
+        int i = 0;
+
+        // Rajoute la dernière ville enregistrée dans l'AVL des villes au tableau des villes parcourues par le trajet examiné
+        while (node->trajet.villes[i] != NULL && i < 59)
+        {
+            if (node->trajet.villes[i] == *city)
+                return node; // Si la ville est déjà dans le tableau, ignorer cette étape
+            i++;
+        }
+        node->trajet.villes[i] = *city; 
+        (*city)->ville.trajets += 1; // Incrémenter le nombre de trajets qui parcourent la ville sans compter plusieurs fois un même trajet
+
+        return node;
+    }
+
+    if (*h != 0){ // Rééquilibrage
+        node->eq += *h;
+        node = equilibrerAVL_s(node);
+        if (node->eq == 0){
+            *h = 0;
+        }
+        else{
+            *h = 1;
         }
     }
 
@@ -322,7 +387,7 @@ pArbre_s insert_trajet(pArbre_s node, int ID, double distance, int* h, int* coun
 }
 
 void free_tree_t(pArbre_t node){
-    if (node != NULL) {
+    if (node != NULL){
         free_tree_t(node->fg);
         free_tree_t(node->fd);
         free(node);
@@ -330,100 +395,100 @@ void free_tree_t(pArbre_t node){
 }
 
 void free_tree_s(pArbre_s node){
-    if (node != NULL) {
+    if (node != NULL){
         free_tree_s(node->fg);
         free_tree_s(node->fd);
         free(node);
     }
 }
 
-void AVL_to_Tab_t(pArbre_t node,Ville* tab,int *n){
-    if(node){
+// Conversion d'AVL de Ville en un tableau de villes
+void AVL_to_Tab_t(pArbre_t node, Ville *tab, int *n){
+    if (node){
 
-        AVL_to_Tab_t(node->fg,tab,n);
+        AVL_to_Tab_t(node->fg, tab, n);
 
-
-        strcpy(tab[*n].nom,node->ville.nom);
-        tab[*n].trajets=node->ville.trajets;
-        tab[*n].premier=node->ville.premier;
+        strcpy(tab[*n].nom, node->ville.nom);
+        tab[*n].trajets = node->ville.trajets;
+        tab[*n].premier = node->ville.premier;
 
         (*n)++;
-        
-        AVL_to_Tab_t(node->fd,tab,n);
+
+        AVL_to_Tab_t(node->fd, tab, n);
     }
 }
 
-void AVL_to_Tab_s(pArbre_s node,Trajet* tab,int *n){
-    if(node){
+// Conversion d'AVL de Trajets en un tableau de trajets
+void AVL_to_Tab_s(pArbre_s node, Trajet *tab, int *n){
+    if (node){
 
-        AVL_to_Tab_s(node->fg,tab,n);
+        AVL_to_Tab_s(node->fg, tab, n);
 
-        tab[*n].max=node->trajet.max;
-        tab[*n].min=node->trajet.min;
-        tab[*n].nb_step=node->trajet.nb_step;
-        tab[*n].total=node->trajet.total;
-        tab[*n].IDTrajet=node->trajet.IDTrajet;
+        tab[*n].max = node->trajet.max;
+        tab[*n].min = node->trajet.min;
+        tab[*n].nb_step = node->trajet.nb_step;
+        tab[*n].total = node->trajet.total;
+        tab[*n].IDTrajet = node->trajet.IDTrajet;
 
         (*n)++;
-        
-        AVL_to_Tab_s(node->fd,tab,n);
+
+        AVL_to_Tab_s(node->fd, tab, n);
     }
 }
 
-void afficheTab_s(Trajet* tab,int n){
+// Afficher les éléments d'un tableau de ville selon le format : Ville, nombre de trajets la parcourant, nombre de fois qu'elle est ville de départ
+void afficheTab_t(Ville *tab, int n){
     for (int i = 0; i < n; i++){
-        printf("\n%d : IDTrajet : %d, min : %f, max : %f, total : %f, steps : %d",i,tab[i].IDTrajet,tab[i].min,tab[i].max,tab[i].total,tab[i].nb_step);
-    }
-    
-}
-
-void triBulle_t(Ville *tab, int taille){
-    int desordre, ncase, etape;
-    Ville temp;
-    etape = taille - 1;
-    do{
-        desordre = 0;
-        for (ncase = 0; ncase < etape; ncase++){
-            if (tab[ncase].trajets < tab[ncase + 1].trajets){
-            desordre = 1;
-            temp = tab[ncase];
-            tab[ncase] = tab[ncase + 1];
-            tab[ncase + 1] = temp;
-            }
-        }
-        etape--;
-    } while (desordre && etape > 0);
-}
-
-int partitionner(Trajet *tab, int debut, int fin) {
-    double pivot = tab[fin].max - tab[fin].min;
-    int i = debut - 1;
-    Trajet temp;
-
-    for (int j = debut; j < fin; j++) {
-        if ((tab[j].max - tab[j].min) > pivot) {
-            i++;
-            temp = tab[i];
-            tab[i] = tab[j];
-            tab[j] = temp;
-        }
-    }
-    temp = tab[i+1];
-    tab[i+1] = tab[fin];
-    tab[fin] = temp;
-    return i + 1;
-}
-
-void triRapide(Trajet *tableau, int debut, int fin) {
-    if (debut < fin) {
-        int pivot = partitionner(tableau, debut, fin);
-
-        triRapide(tableau, debut, pivot - 1);
-        triRapide(tableau, pivot + 1, fin);
+        printf("\nVille : %s, trajets : %d, premier : %d", tab[i].nom, tab[i].trajets, tab[i].premier);
     }
 }
 
-int compare(const void* a, const void* b){
+// Traitement -t : Fonction d'insertion des [size] premières villes d'un tableau dans un nouveau tableau
+Ville *putInTab_t(Ville *tab, int size, Ville *tab2){
+    for (int i = 0; i < size; i++){
+        tab2[i] = tab[i];
+    }
+    return tab2;
+}
+
+// Afficher les éléments d'un tableau de trajets selon le format : ID du trajet, distance minimum parcourue, distance maximum parcourue, distance totale parcourue, nombre d'étapes
+void afficheTab_s(Trajet *tab, int n){
+    for (int i = 0; i < n; i++){
+        printf("\n%d : IDTrajet : %d, min : %f, max : %f, total : %f, steps : %d", i, tab[i].IDTrajet, tab[i].min, tab[i].max, tab[i].total, tab[i].nb_step);
+    }
+}
+
+// Fonction de comparaison de noms de villes pour trier par ordre alphabétique
+int compareNames(const void *a, const void *b){
+    const Ville *first = (const Ville *)a;
+    const Ville *second = (const Ville *)b;
+
+    return strcmp(first->nom, second->nom);
+}
+
+// Fonction de comparaison de nombre de trajets pour trier par ordre décroissant
+int compareTrajets(const void *a, const void *b){
+    const Ville *first = (const Ville *)a;
+    const Ville *second = (const Ville *)b;
+
+    if (first->trajets < second->trajets)
+    {
+        return 1;
+    }
+
+    else if (first->trajets > second->trajets)
+    {
+        return -1;
+    }
+
+    else
+    {
+        return 0;
+    }
+}
+
+// Fonction de comparaison des différences max - min d'un trajet pour trier par ordre décroissant
+int compare_distance_diff(const void* a, const void* b){
     double diff_a = ((Trajet*)a)->max - ((Trajet*)a)->min;
     double diff_b = ((Trajet*)b)->max - ((Trajet*)b)->min;
 
@@ -441,23 +506,35 @@ int compare(const void* a, const void* b){
 }
 
 int main(int argc, char *argv[]){
-    //Traitement -t
+
+    // Traitement -t
     if(!strcmp(argv[1],"-t")){
-        FILE* file = fopen(argv[2], "r");
-        if (file == NULL) {
+
+        FILE *file = fopen(argv[2], "r");
+
+        if (file == NULL){
             perror("Erreur lors de l'ouverture du fichier");
             return 1;
         }
 
         char line[256];
-        pArbre_t AVLroot = NULL;
-        int count = 0;
 
-        while (fgets(line, sizeof(line), file)){
+        pArbre_t AVL_Ville = NULL;
+        pArbre_s AVL_Trajet = NULL;
+
+        int count = 0;
+        pArbre_t insertedCity = NULL;
+        int IDTrajet;
+        int h1 = 0, h2 = 0;
+
+        // Parcours du fichier et insertion des Villes et Trajets dans leurs AVL respectifs
+        while (fgets(line, sizeof(line), file))
+        {
             char *token;
             char townB[50];
-            int h = 0;
-            int IDTrajet;
+            h1 = 0;
+            h2 = 0;
+
             // Utiliser strtok pour extraire les champs du fichier CSV
             token = strtok(line, ";");
             IDTrajet = atoi(token);
@@ -466,54 +543,77 @@ int main(int argc, char *argv[]){
             token = strtok(NULL, ";");
             strcpy(townB, token);
 
-            AVLroot = insert(AVLroot, townB, &h, &count, 0);
+            AVL_Ville = insert_ville(AVL_Ville, townB, &h1, &count, 0, &insertedCity); // Insertion de la ville d'arrivée de la ligne parcourue dans l'AVL des Villes
+            AVL_Trajet = insert_trajet_t(AVL_Trajet, IDTrajet, &h2, &insertedCity); // Insertion du trajet de ligne parcourue dans l'AVL des Trajets, ainsi que de la ville d'arrivée qu'il parcourt à cette ligne dans son tableau de villes parcourues
         }
 
-        // On revient au debut du fichier pour prendre les villes de depart
-
+        // On revient au début du fichier pour prendre les villes de départ
         rewind(file);
 
-        while (fgets(line, sizeof(line), file)){
+        // Parcours du fichier et insertion des Villes et Trajets dans leurs AVL respectifs
+        while (fgets(line, sizeof(line), file))
+        {
             char *token;
             char townA[50];
-            int h = 0;
+            h1 = 0;
+            h2 = 0;
+
             // Utiliser strtok pour extraire les champs du fichier CSV
             token = strtok(line, ";");
+            IDTrajet = atoi(token);
             token = strtok(NULL, ";");
-            if (atoi(token) == 1){
+
+            if (atoi(token) == 1)
+            { // Si on a l'étape 1 d'un trajet, on refait pareil
                 token = strtok(NULL, ";");
                 strcpy(townA, token);
-                AVLroot = insert(AVLroot, townA, &h, &count, 1);
+                token = strtok(NULL, ";");
+                token = strtok(NULL, ";");
+
+                AVL_Ville = insert_ville(AVL_Ville, townA, &h1, &count, 1, &insertedCity); // Insertion de la ville d'arrivée de la ligne parcourue dans l'AVL des Villes
+                AVL_Trajet = insert_trajet_t(AVL_Trajet, IDTrajet, &h2, &insertedCity); // Insertion du trajet de ligne parcourue dans l'AVL des Trajets, ainsi que de la ville d'arrivée qu'il parcourt à cette ligne dans son tableau de villes parcourues
             }
         }
+
         fclose(file);
 
-        Ville* tab = (Ville*)malloc(sizeof(Ville)*count);
-        
+        printf("\nNb villes = %d\n", count);
+
+        Ville *tab = (Ville *)malloc(sizeof(Ville) * count); // tableau de toutes les villes
+        Ville *tab2 = (Ville *)malloc(sizeof(Ville) * 10); // tableau des 10 premières villes avec le + de trajets qui la parcourent
         int n = 0;
 
-        AVL_to_Tab_t(AVLroot,tab,&n);
-        triBulle_t(tab,count);
+        AVL_to_Tab_t(AVL_Ville, tab, &n);
+        qsort(tab, count, sizeof(Ville), compareTrajets); // Trier toutes les villes par celles qui ont le + de trajets qui les parcourent
+        tab2 = putInTab_t(tab, 10, tab2); // mettre les 10 premières villes du tableau dans le nouveau tableau
+        qsort(tab2, 10, sizeof(Ville), compareNames); // Trier par ordre alphabétique des noms
 
-        //Trier par ordre alpha
+        afficheTab_t(tab2, 10);
 
-        FILE* new = fopen("temp/data_t.txt", "w"); // Creation du fichier stockant les donnees
+        FILE *new = fopen("temp/data_t.txt", "w");
 
-        for (int i = 0; i < 10; i++){
-            if(file){
-                fprintf(new, "%s;%d;%d\n" , tab[i].nom,tab[i].trajets,tab[i].premier);
+        // Enregistrer le classement des 10 villes dans un fichier
+        for (int i = 0; i < 10; i++)
+        {
+            if (new)
+            {
+                fprintf(new, "%s;%d;%d\n", tab2[i].nom, tab2[i].trajets, tab2[i].premier);
             }
         }
-        
+
         fclose(new);
 
-        free_tree_t(AVLroot);
+        free_tree_t(AVL_Ville);
+        free_tree_s(AVL_Trajet);
         free(tab);
+        free(tab2);
     }
-    
+
     //Traitement -s
     if(!strcmp(argv[1],"-s")){
+
         FILE* file = fopen(argv[2], "r");
+
         if (file == NULL) {
             perror("Erreur lors de l'ouverture du fichier");
             return 1;
@@ -523,6 +623,7 @@ int main(int argc, char *argv[]){
         char line[256];
         int count = 0;
 
+        // Parcours du fichier et insertion des Trajets dans l'AVL
         while (fgets(line, sizeof(line), file)){
             char *token;
             int IDTrajet;
@@ -538,39 +639,33 @@ int main(int argc, char *argv[]){
             token = strtok(NULL, ";");
             token = strtok(NULL, ";");
             distance = atof(token);
-        
-            if(IDTrajet == 165538){
-                printf("%f", distance);
-            }
 
-            AVL_Trajet = insert_trajet(AVL_Trajet, IDTrajet, distance, &h, &count);
+            AVL_Trajet = insert_trajet_s(AVL_Trajet, IDTrajet, distance, &h, &count); // Insertion du trajet et de la distance qu'il parcourt à cette ligne dans l'AVL des Trajets
         }
 
         fclose(file);
         
         //Moyenne = total/nb pour utiliser en graph
-        Trajet* tab = (Trajet*)malloc(sizeof(Trajet)*count);
+
+        Trajet* tab = (Trajet*)malloc(sizeof(Trajet)*count); // tableau de tous les trajets
         int n = 0;
+
         AVL_to_Tab_s(AVL_Trajet,tab,&n);
+        qsort(tab, count, sizeof(Trajet), compare_distance_diff); // Trier tous les trajets par ceux qui ont la + grande différence max - min de distance parcourue
 
-        printf("COCUOCUCIUCOCUUCOUOCUO");
+        afficheTab_s(tab,50); // Afficher les 50 premiers du classement
 
-        //triRapide(tab,0,count-1);
-        qsort(tab, count, sizeof(Trajet), compare);
-
-        printf("Lego");
-        afficheTab_s(tab,50);
-        printf("Legooooooo");
         /*FILE* new = fopen("temp/data_s.txt", "w");
 
         for (int i = 0; i < 50; i++){
-            if(file){
+            if(new){
                 fprintf(new, "");
             }
         }
         
         fclose(new);
         */
+
         free_tree_s(AVL_Trajet);
         free(tab);
     }
