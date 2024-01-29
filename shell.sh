@@ -19,7 +19,32 @@ fi
 
 for i in $* ; do
     if [ "$i" = "-h" ] || [ "$i" = "--help" ]; then
-        echo "HELP ME"
+        echo "
+Programme d'execution de tri des donnees d'un fichier csv
+
+SYNOPSIS 
+    bash shell.sh [FICHIER] [OPTIONS]
+
+DESCRIPTION
+
+    FICHIER doit etre un fichier csv valide
+
+    -d1
+        Les 10 premiers conducteurs en nombre de trajets par ordre decroissant
+
+    -d2
+        Les 10 plus grandes distances totales parcourues 
+
+    -l
+        Les 10 trajets les plus longs
+
+    -t
+        Les 10 villes les plus traversees A
+        Affiche egalement le nombre de fois ou ces villes ont ete la ville de depart
+
+    -s
+        Les 50 trajets avec la plus grande difference distance max - min
+        Affiche egalement la distance moyenne des trajets"
         exit 1
     fi
 done
@@ -53,6 +78,7 @@ if [ -d "temp" ]; then
     rm -rf temp
 fi
 mkdir temp
+
 if [ ! -d "images" ]; then
     mkdir images
 fi
@@ -85,3 +111,5 @@ if [ $s = 1 ]; then
     gcc -o traitements.exe main.c
     time ./traitements.exe -s $1
 fi
+
+rm -rf temp

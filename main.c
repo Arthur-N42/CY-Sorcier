@@ -22,9 +22,9 @@ typedef Arbre_t *pArbre_t;
 typedef struct Trajet
 {
     int IDTrajet;
-    double max;
-    double min;
-    double total;
+    float max;
+    float min;
+    float total;
     int nb_step;
     pArbre_t villes[60];
 } Trajet;
@@ -59,7 +59,7 @@ pArbre_t creerArbre_Ville(char name[30], int flag)
 }
 
 // Constructeur d'un noeud pour les AVL de Trajet (traitement S)
-pArbre_s creerArbre_Trajet(int ID, double distance)
+pArbre_s creerArbre_Trajet(int ID, float distance)
 {
     pArbre_s new = malloc(sizeof(Arbre_s));
     if (new == NULL)
@@ -287,7 +287,7 @@ pArbre_t insert_ville(pArbre_t node, char name[30], int *h, int *count, int flag
 }
 
 // Traitement -s : Fonction recursive pour inserer un noeud dans l'arbre AVL de Trajet selon un trajet
-pArbre_s insert_trajet_s(pArbre_s node, int ID, double distance, int *h, int *count){
+pArbre_s insert_trajet_s(pArbre_s node, int ID, float distance, int *h, int *count){
 
     if (node == NULL){ // Le trajet n'est pas déjà dans l'AVL, créer son noeud et le rajouter. Incrémenter le compte du nombre d'éléments de l'AVL aussi
         *h = 1;
@@ -489,8 +489,8 @@ int compareTrajets(const void *a, const void *b){
 
 // Fonction de comparaison des différences max - min d'un trajet pour trier par ordre décroissant
 int compare_distance_diff(const void* a, const void* b){
-    double diff_a = ((Trajet*)a)->max - ((Trajet*)a)->min;
-    double diff_b = ((Trajet*)b)->max - ((Trajet*)b)->min;
+    float diff_a = ((Trajet*)a)->max - ((Trajet*)a)->min;
+    float diff_b = ((Trajet*)b)->max - ((Trajet*)b)->min;
 
     if(diff_a < diff_b){
         return 1;
@@ -577,8 +577,6 @@ int main(int argc, char *argv[]){
 
         fclose(file);
 
-        printf("\nNb villes = %d\n", count);
-
         Ville *tab = (Ville *)malloc(sizeof(Ville) * count); // tableau de toutes les villes
         Ville *tab2 = (Ville *)malloc(sizeof(Ville) * 10); // tableau des 10 premières villes avec le + de trajets qui la parcourent
         int n = 0;
@@ -587,8 +585,6 @@ int main(int argc, char *argv[]){
         qsort(tab, count, sizeof(Ville), compareTrajets); // Trier toutes les villes par celles qui ont le + de trajets qui les parcourent
         tab2 = putInTab_t(tab, 10, tab2); // mettre les 10 premières villes du tableau dans le nouveau tableau
         qsort(tab2, 10, sizeof(Ville), compareNames); // Trier par ordre alphabétique des noms
-
-        afficheTab_t(tab2, 10);
 
         FILE *new = fopen("temp/data_t.txt", "w");
 
@@ -627,7 +623,7 @@ int main(int argc, char *argv[]){
         while (fgets(line, sizeof(line), file)){
             char *token;
             int IDTrajet;
-            double distance;
+            float distance;
             int h = 0;
 
             // Utiliser strtok pour extraire les champs du fichier CSV
@@ -644,8 +640,6 @@ int main(int argc, char *argv[]){
         }
 
         fclose(file);
-        
-        //Moyenne = total/nb pour utiliser en graph
 
         Trajet* tab = (Trajet*)malloc(sizeof(Trajet)*count); // tableau de tous les trajets
         int n = 0;
@@ -653,18 +647,17 @@ int main(int argc, char *argv[]){
         AVL_to_Tab_s(AVL_Trajet,tab,&n);
         qsort(tab, count, sizeof(Trajet), compare_distance_diff); // Trier tous les trajets par ceux qui ont la + grande différence max - min de distance parcourue
 
-        afficheTab_s(tab,50); // Afficher les 50 premiers du classement
-
-        /*FILE* new = fopen("temp/data_s.txt", "w");
+        FILE* new = fopen("temp/data_s.txt", "w");
 
         for (int i = 0; i < 50; i++){
             if(new){
-                fprintf(new, "");
+                // ID, min, max, total, max - min, moyenne
+                fprintf(new, "%d;%f;%f;%f;%f\n", tab[i].IDTrajet, tab[i].min, tab[i].max, tab[i].max - tab[i].min, tab[i].total/tab[i].nb_step);
             }
         }
         
         fclose(new);
-        */
+        
 
         free_tree_s(AVL_Trajet);
         free(tab);
