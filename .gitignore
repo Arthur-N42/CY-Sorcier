@@ -2,6 +2,7 @@
 *.csv
 *.exe
 *.json
+*.o
 
 #
 images
