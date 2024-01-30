@@ -5,7 +5,7 @@ SRC_FILES = main.c basic.c traitement_s.c traitement_t.c
 
 OBJ_FILES = $(SRC_FILES:.c=.o)
 
-EXECUTABLE = traitements.exe
+EXECUTABLE = traitements
 
 .PHONY: all clean
 
