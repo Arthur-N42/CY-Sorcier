@@ -94,15 +94,7 @@ if [ $d1 = 1 ]; then
     # Utilise un dictionnaire et incremente le nombre de trajet pour un conducteur si la paire (ID - Conducteur) n'a pas ete "ajoutee"
     # Trie dans l'ordre decroissant et affiche les 10 premiers
     time mawk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, ";" , trips[driver] }' $1 | sort -k2 -nr -t ";" | head -10 > temp/data_d1.txt # ~4.3s
-    echo "set term png
-    set output 'images/classement.png'
-    set title 'Classement'
-    set ylabel 'Nombre'
-    set style fill solid
-    set boxwidth 0.5
-    set datafile separator ';'
-    set yrange[0:*]
-    plot 'temp/data_d1.txt' using 0:2:xtic(1) with boxes title 'Nombres' linecolor rgb 'blue' lw2" | gnuplot
+    gnuplot Scripts_Gnuplot/gnud1.gnu
     
 fi  
 
