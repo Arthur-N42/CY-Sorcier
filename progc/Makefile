@@ -12,10 +12,10 @@ EXECUTABLE = traitements
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJ_FILES)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) -Ofast $(LDFLAGS) -o $@ $^
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) -Ofast $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -rf *.o $(EXECUTABLE)
