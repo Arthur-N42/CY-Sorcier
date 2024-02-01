@@ -102,7 +102,7 @@ if [ $d1 = 1 ]; then
     set boxwidth 0.5
     set datafile separator ';'
     set yrange[0:*]
-    plot 'temp/data_d1.txt' using 0:2:xtic(1) with boxes title 'Nombres' linecolor rgb 'blue' lw2" | gnuplot
+    plot 'temp/data_d1.txt' using 0:2:xtic(1) with boxes title 'Nombres' linecolor rgb 'blue'" | gnuplot
     
 fi  
 
