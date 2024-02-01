@@ -112,12 +112,31 @@ if [ $t = 1 ]; then
     cd progc
     make
     time ./traitements -t $1
+    "set term png
+set output 'classement2.png'
+set title 'Classement'
+set ylabel 'Nombre'
+set style fill solid
+set boxwidth 0.35
+set datafile separator ';'
+set yrange[0:*]
+plot 'data.txt' using 0:2:xtic(1) with boxes title 'Meilleur Note' linecolor rgb 'green', '' using (\$0+0.35):3 with boxes title 'Note la plus basse' linecolor rgb 'red'" | gnuplot
+##graph a 2 barre
 fi
 
 if [ $s = 1 ]; then
     cd progc
     make
     time ./traitements -s $1
+    "set term png
+set output 'courbes.png'
+set title 'Courbes des notes'
+set ylabel 'Note'
+set boxwidth 0.5
+set datafile separator ';'
+set yrange[0:*]
+plot 'data.txt' using 0:2:xtic(1) with lines title 'Min' linecolor rgb 'orange', '' using (\$0):3 with lines title 'Max' linecolor rgb 'orange', '' using (\$0):(\$2+\$3)/2 with lines title 'Moyenne' linecolor rgb 'blue'" | gnuplot
+#2 courbes + 1 qui est la moyenne
 fi
 
 #rm -rf temp
