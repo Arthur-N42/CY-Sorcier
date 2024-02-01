@@ -32,16 +32,16 @@ DESCRIPTION
         Exemple :
             bash shell.sh data/data.csv -d1
 
-    [FICHIER] :
+    [OPTIONS] :
 
     -d1
-        Les 10 premiers conducteurs en nombre de trajets par ordre decroissant
+        Les 10 premiers conducteurs en nombre de trajets par ordre decroissant;
 
     -d2
-        Les 10 plus grandes distances totales parcourues par chaque conducteur, par ordre decroissant
+        Les 10 plus grandes distances totales parcourues par chaque conducteur, par ordre decroissant;
 
     -l
-        Les 10 trajets les plus longs, par ordre croissant du numero d'identifiant du trajet
+        Les 10 trajets les plus longs, par ordre croissant du numero d'identifiant du trajet;
 
     -t
         Les 10 villes avec le plus de trajets les traversant.
@@ -49,7 +49,10 @@ DESCRIPTION
 
     -s
         Les 50 trajets avec la plus grande difference distance max - min.
-        Affiche egalement la distance moyenne des trajets."
+        Affiche egalement la distance moyenne des trajets.
+
+    -h, --help
+        Affiche cette aide et quitte le programme"
         exit 1
     fi
 done
