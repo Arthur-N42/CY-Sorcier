@@ -16,7 +16,7 @@ puis les arguments pour les traitements souhaités (`-d1`, `-d2`, `-l`, `-t`, `-
 L'option `-h` ou `--help` affiche une aide afin de comprendre les différentes options. Exemple d'exécution :
 
 ```bash
-# Lance les traitements D1, L et T avec le fichier data.csv.
+# Traitements d2, s et l avec le fichier data.csv dans un dossier data.
 bash shell.sh data/data.csv -d2 -s -l
 ```
 
