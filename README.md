@@ -1,6 +1,4 @@
 # CY-Sorcier
-Projet CY Truck
-
 Programme de traitement de données
 
 ## Téléchargement
