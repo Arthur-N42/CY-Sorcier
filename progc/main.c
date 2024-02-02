@@ -162,7 +162,7 @@ int main(int argc, char *argv[]){
 
         for (int i = 0; i < 50; i++){
             if(new){
-                // ID, min, max, total, max - min, moyenne
+                // ID, min, max, max - min, moyenne
                 fprintf(new, "%d;%f;%f;%f;%f\n", tab[i].IDTrajet, tab[i].min, tab[i].max, tab[i].max - tab[i].min, tab[i].total/tab[i].nb_step);
             }
         }
