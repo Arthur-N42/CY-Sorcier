@@ -21,7 +21,8 @@ for i in $* ; do
         echo "
 Programme d'execution de tri des donnees d'un fichier csv
 
-SYNOPSIS 
+SYNOPSIS
+
     bash shell.sh [FICHIER] [OPTIONS]
 
 DESCRIPTION
@@ -96,23 +97,28 @@ if [ $d1 = 1 ]; then
     # NR > 1 ignore la ligne 1 
     # Utilise un dictionnaire et incremente le nombre de trajet pour un conducteur si la paire (ID - Conducteur) n'a pas ete "ajoutee"
     # Trie dans l'ordre decroissant et affiche les 10 premiers
-    time mawk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, ";" , trips[driver] }' $1 | sort -k2 -nr -t ";" | head -10 > temp/data_d1.txt # ~4.3s
+
+    echo "Traitement -d1, temps d'execution :"
+    time mawk -F';' 'NR > 1 { if (!added[$1, $6]) { trips[$6]++ } added[$1, $6]++ } END { for (driver in trips) print driver, ";" , trips[driver] }' $1 | sort -k2 -nr -t ";" | head -10 > temp/data_d1.txt
     gnuplot Scripts_Gnuplot/gnud1.gnu
 fi  
 
 if [ $d2 = 1 ]; then
-    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, ";", trips[driver] }' $1 | sort -k2 -nr -t ";" | head -10 > temp/data_d2.txt # ~2.2s exec
+    echo "Traitement -d2, temps d'execution :"
+    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$6]+=$5 } END { for (driver in trips) print driver, ";", trips[driver] }' $1 | sort -k2 -nr -t ";" | head -10 > temp/data_d2.txt
     gnuplot Scripts_Gnuplot/gnud2.gnu
 fi
 
 if [ $l = 1 ]; then
-    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$1]+=$5 } END { for (distance in trips) print distance, ";" , trips[distance] }' $1 | sort -k2 -nr -t ";" | head -10 | sort -k1 -t ";" -n > temp/data_l.txt # ~4.6s
+    echo "Traitement -l, temps d'execution :"
+    time LC_NUMERIC="C" awk -F';' 'NR > 1 { trips[$1]+=$5 } END { for (distance in trips) print distance, ";" , trips[distance] }' $1 | sort -k2 -nr -t ";" | head -10 | sort -k1 -t ";" -n > temp/data_l.txt
     gnuplot Scripts_Gnuplot/gnul.gnu
 fi
 
 if [ $t = 1 ]; then
     cd progc
     make
+    echo "Traitement -t, temps d'execution :"
     time ./traitements -t $1
     cd ..
     gnuplot Scripts_Gnuplot/gnut.gnu
@@ -121,6 +127,7 @@ fi
 if [ $s = 1 ]; then
     cd progc
     make
+    echo "Traitement -s, temps d'execution :"
     time ./traitements -s $1
     cd ..
     gnuplot Scripts_Gnuplot/gnus.gnu
